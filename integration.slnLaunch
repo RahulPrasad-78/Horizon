@@ -1,0 +1,35 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "services\\identity-service\\LearningPlatformAuth.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "services\\teacher-service\\teacher-service\\teacherAPI.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "services\\course-service\\Course.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Horizon.MVC\\Horizon.MVC.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "gateway\\GatewayAPI\\GatewayAPI.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "services\\chat-service\\WebApplication1.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "services\\student-service\\LearningPlatform.StudentService.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

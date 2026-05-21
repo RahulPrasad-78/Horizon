@@ -1,0 +1,190 @@
+@model Horizon.MVC.DTOs.TeacherCourseWriteDto
+@{
+    ViewData["Title"] = "Edit Course";
+    var courseId = ViewBag.CourseId as int? ?? 0;
+    var courseTitle = ViewBag.CourseTitle as string ?? "Course";
+    var status = ViewBag.Status as string ?? "Draft";
+    var createdAt = ViewBag.CreatedAt is DateTime dt ? dt.ToString("MMM dd, yyyy") : "—";
+    var videos = ViewBag.Videos as List<Horizon.MVC.DTOs.TeacherCourseVideoDto> ?? new();
+}
+
+<div class="max-w-4xl mx-auto py-10 animate-[fadeUp_0.5s_ease_forwards]">
+
+    <div class="mb-8 flex items-center gap-4">
+        <a asp-action="Index" class="w-10 h-10 rounded-xl bg-[#F0F5F2] dark:bg-[#1B2A24] text-[#2E7D5B] dark:text-[#7DD9AB] flex items-center justify-center hover:bg-[#2E7D5B] hover:text-white transition-all">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="font-serif text-3xl font-bold text-gray-900 dark:text-[#E6F1EC] tracking-tight">Edit Course</h1>
+            <div class="flex items-center gap-3 mt-1">
+                <p class="text-slate-500 dark:text-[#A7B8B0] text-sm">@courseTitle</p>
+                <span class="text-slate-300 dark:text-[#3D5048]">·</span>
+                <span class="text-xs font-bold uppercase tracking-wider @(status.ToLower() == "published" ? "text-[#2E7D5B] dark:text-[#7DD9AB]" : "text-slate-400 dark:text-[#A7B8B0]")">@status</span>
+                <span class="text-slate-300 dark:text-[#3D5048]">·</span>
+                <span class="text-xs text-slate-400 dark:text-[#A7B8B0]">Created @createdAt</span>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="mb-6 flex items-center gap-3 bg-[#F0FDF4] dark:bg-[#1B2A1E] border border-[#86EFAC] dark:border-[#2E7D5B] text-[#166534] dark:text-[#88d6af] px-5 py-3 rounded-xl text-sm font-medium">
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="mb-6 flex items-center gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 px-5 py-3 rounded-xl text-sm font-medium">
+            <span class="material-symbols-outlined text-[20px]">error</span>
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Edit Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-3xl p-8 shadow-sm">
+                <h2 class="font-serif text-xl font-bold text-gray-900 dark:text-[#E6F1EC] mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#2E7D5B] dark:text-[#7DD9AB]">edit_note</span>
+                    Course Details
+                </h2>
+
+                <form asp-action="Edit" asp-route-id="@courseId" method="post" class="space-y-5">
+                    <div asp-validation-summary="ModelOnly" class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 text-rose-600 dark:text-rose-400 p-4 rounded-xl text-sm font-bold"></div>
+
+                    <div>
+                        <label asp-for="Title" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Course Title</label>
+                        <input asp-for="Title" required
+                               class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                        <span asp-validation-for="Title" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Description" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Description</label>
+                        <textarea asp-for="Description" rows="5" required
+                                  class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors resize-none"></textarea>
+                        <span asp-validation-for="Description" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="Category" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Category</label>
+                            <input asp-for="Category"
+                                   class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                        </div>
+                        <div>
+                            <label asp-for="Duration" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Duration</label>
+                            <input asp-for="Duration"
+                                   class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="Price" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Price (USD)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                                <input asp-for="Price" type="number" step="0.01" min="0"
+                                       class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl pl-8 pr-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                            </div>
+                        </div>
+                        <div>
+                            <label asp-for="StartDate" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Start Date</label>
+                            <input asp-for="StartDate" type="date"
+                                   class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label asp-for="ThumbnailUrl" class="block text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Thumbnail URL <span class="font-normal normal-case">(optional)</span></label>
+                        <input asp-for="ThumbnailUrl"
+                               class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400"
+                               placeholder="https://example.com/image.jpg" />
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input asp-for="IsPublished" type="checkbox"
+                                   class="w-5 h-5 rounded border-2 border-[#E3E8E5] dark:border-[#23332D] text-[#2E7D5B] focus:ring-[#2E7D5B] focus:ring-offset-0 transition-colors" />
+                            <div>
+                                <span class="block text-sm font-bold text-gray-900 dark:text-[#E6F1EC]">Published</span>
+                                <span class="block text-xs text-slate-400">Toggle course visibility</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-4 border-t border-[#E3E8E5] dark:border-[#23332D]">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 bg-[#2E7D5B] hover:bg-[#096444] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[20px]">save</span> Save Changes
+                        </button>
+                        <a asp-action="Index"
+                           class="inline-flex items-center gap-2 bg-[#F0F5F2] dark:bg-[#1B2A24] text-slate-600 dark:text-[#A7B8B0] px-6 py-3 rounded-xl font-bold transition-all">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar: Videos & Quick Actions -->
+        <div class="space-y-6">
+            <!-- Publish Action -->
+            @if (status.ToLower() != "published")
+            {
+                <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-bold text-gray-900 dark:text-[#E6F1EC] mb-3 flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">radio_button_checked</span>
+                        Draft Course
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-[#A7B8B0] mb-4 leading-relaxed">This course is not visible to students yet. Publish when ready.</p>
+                    <form asp-action="Publish" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@courseId" />
+                        <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-2 bg-[#2E7D5B] hover:bg-[#096444] text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all">
+                            <span class="material-symbols-outlined text-[18px]">publish</span> Publish Course
+                        </button>
+                    </form>
+                </div>
+            }
+
+            <!-- Add Video -->
+            <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-[#E6F1EC] mb-4 flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined text-[18px] text-[#2E7D5B] dark:text-[#7DD9AB]">video_library</span>
+                    Course Videos <span class="ml-auto text-xs font-normal text-slate-400">@videos.Count added</span>
+                </h3>
+
+                @if (videos.Any())
+                {
+                    <ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                        @foreach (var v in videos)
+                        {
+                            <li class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#A7B8B0] bg-[#F7F9F6] dark:bg-[#101411] rounded-lg px-3 py-2">
+                                <span class="material-symbols-outlined text-[16px] text-[#2E7D5B]">play_circle</span>
+                                <span class="truncate">@v.VideoUrl</span>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                <form asp-action="AddVideo" method="post" class="space-y-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="courseId" value="@courseId" />
+                    <input type="url" name="videoUrl" placeholder="https://youtube.com/watch?v=..."
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-3 py-2.5 text-gray-900 dark:text-[#E6F1EC] text-sm font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400" />
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center gap-2 bg-[#F0F5F2] dark:bg-[#1B2A24] hover:bg-[#2E7D5B] hover:text-white text-[#2E7D5B] dark:text-[#7DD9AB] px-4 py-2.5 rounded-xl font-bold text-sm transition-all">
+                        <span class="material-symbols-outlined text-[18px]">add</span> Add Video
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

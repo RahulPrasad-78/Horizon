@@ -1,0 +1,109 @@
+@model Horizon.MVC.DTOs.TeacherCourseWriteDto
+@{
+    ViewData["Title"] = "Create New Course";
+}
+
+<div class="max-w-4xl mx-auto py-10 animate-[fadeUp_0.5s_ease_forwards]">
+
+    <div class="mb-8 flex items-center gap-4">
+        <a asp-action="Index" class="w-10 h-10 rounded-xl bg-[#F0F5F2] dark:bg-[#1B2A24] text-[#2E7D5B] dark:text-[#7DD9AB] flex items-center justify-center hover:bg-[#2E7D5B] hover:text-white transition-all">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="font-serif text-3xl font-bold text-gray-900 dark:text-[#E6F1EC] tracking-tight">Create New Course</h1>
+            <p class="text-slate-500 dark:text-[#A7B8B0] text-sm">Fill in the details below to publish your course.</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-3xl p-8 sm:p-10 shadow-sm">
+
+        <form asp-action="Create" method="post" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 p-4 rounded-xl text-sm font-bold"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label asp-for="Title" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Course Title</label>
+                    <input asp-for="Title" required
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400"
+                           placeholder="e.g. Modern Web Development with React" />
+                    <span asp-validation-for="Title" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label asp-for="Description" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Description</label>
+                    <textarea asp-for="Description" rows="5" required
+                              class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400 resize-none"
+                              placeholder="What will students learn from this course?"></textarea>
+                    <span asp-validation-for="Description" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Category" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Category</label>
+                    <input asp-for="Category"
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400"
+                           placeholder="e.g. Programming, Design, Business" />
+                    <span asp-validation-for="Category" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Duration" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Duration</label>
+                    <input asp-for="Duration"
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400"
+                           placeholder="e.g. 8 hours, 12 weeks" />
+                    <span asp-validation-for="Duration" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Price" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Price (USD)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <input asp-for="Price" type="number" step="0.01" min="0"
+                               class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl pl-8 pr-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors"
+                               placeholder="0.00" />
+                    </div>
+                    <span asp-validation-for="Price" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div>
+                    <label asp-for="StartDate" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Start Date</label>
+                    <input asp-for="StartDate" type="date"
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors" />
+                    <span asp-validation-for="StartDate" class="text-rose-500 text-xs font-bold mt-1 block"></span>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label asp-for="ThumbnailUrl" class="block text-sm font-bold text-slate-600 dark:text-[#A7B8B0] uppercase tracking-wider mb-2">Thumbnail URL <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
+                    <input asp-for="ThumbnailUrl"
+                           class="w-full bg-[#F7F9F6] dark:bg-[#101411] border-2 border-[#E3E8E5] dark:border-[#23332D] rounded-xl px-4 py-3 text-gray-900 dark:text-[#E6F1EC] font-medium focus:border-[#2E7D5B] focus:ring-0 transition-colors placeholder-slate-400"
+                           placeholder="https://example.com/image.jpg" />
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input asp-for="IsPublished" type="checkbox"
+                               class="w-5 h-5 rounded border-2 border-[#E3E8E5] dark:border-[#23332D] text-[#2E7D5B] focus:ring-[#2E7D5B] focus:ring-offset-0 transition-colors" />
+                        <div>
+                            <span class="block text-sm font-bold text-gray-900 dark:text-[#E6F1EC]">Publish immediately</span>
+                            <span class="block text-xs text-slate-400 dark:text-[#A7B8B0]">Leave unchecked to save as draft</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 pt-4 border-t border-[#E3E8E5] dark:border-[#23332D]">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 bg-[#2E7D5B] hover:bg-[#096444] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[20px]">save</span> Create Course
+                </button>
+                <a asp-action="Index"
+                   class="inline-flex items-center gap-2 bg-[#F0F5F2] dark:bg-[#1B2A24] hover:bg-[#E3E8E5] dark:hover:bg-[#23332D] text-slate-600 dark:text-[#A7B8B0] px-6 py-3 rounded-xl font-bold transition-all">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

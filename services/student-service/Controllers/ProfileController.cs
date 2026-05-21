@@ -1,0 +1,72 @@
+using LearningPlatform.StudentService.Common;
+using LearningPlatform.StudentService.DTOs;
+using LearningPlatform.StudentService.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace LearningPlatform.StudentService.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProfileController : BaseController
+    {
+        private readonly IProfileService _service;
+        private readonly ILogger<ProfileController> _logger;
+
+        public ProfileController(
+            IProfileService service,
+            ILogger<ProfileController> logger)
+        {
+            _service = service;
+            _logger = logger;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            _logger.LogInformation("Fetching profile");
+
+            var profile = await _service.GetAsync(GetUserId());
+            var userEmail = GetEmail(); // Get the actual email from claims
+
+            if (profile == null)
+            {
+                return Ok(ApiResponseDto<object>.Ok(new ProfileDto
+                {
+                    FullName = string.Empty,
+                    Bio = null,
+                    Skills = new List<string>(),
+                    PreferredLevel = "Beginner",
+                    Email = userEmail,  // ← Use actual email
+                    JoinedDate = DateTime.UtcNow
+                }));
+            }
+
+            return Ok(ApiResponseDto<object>.Ok(new ProfileDto
+            {
+                FullName = profile.FullName,
+                Bio = profile.Bio,
+                Skills = profile.Skills,
+                PreferredLevel = profile.PreferredLevel,
+                Email = userEmail,  // ← Use actual email
+                JoinedDate = profile.JoinedDate
+            }));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Save([FromBody] ProfileDto dto)
+        {
+            await _service.SaveAsync(GetUserId(), dto);
+
+            return Ok(ApiResponseDto<string>.Ok("Profile updated"));
+        }
+
+        [HttpPost("seed/{studentId}")]
+        public async Task<IActionResult> Seed(string studentId, [FromBody] ProfileDto dto)
+        {
+            await _service.SaveAsync(studentId, dto);
+            return Ok(ApiResponseDto<string>.Ok("Student profile created"));
+        }
+    }
+}

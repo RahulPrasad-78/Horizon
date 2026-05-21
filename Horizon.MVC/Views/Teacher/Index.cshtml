@@ -1,0 +1,172 @@
+@model Horizon.MVC.DTOs.TeacherDashboardDto
+@{
+    ViewData["Title"] = "Instructor Dashboard";
+    var metrics = Model?.CourseMetrics ?? new List<Horizon.MVC.DTOs.TeacherCourseMetricsDto>();
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="mb-6 flex items-center gap-3 bg-[#F0FDF4] dark:bg-[#1B2A1E] border border-[#86EFAC] dark:border-[#2E7D5B] text-[#166534] dark:text-[#88d6af] px-5 py-3 rounded-xl text-sm font-medium">
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="mb-6 flex items-center gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 px-5 py-3 rounded-xl text-sm font-medium">
+        <span class="material-symbols-outlined text-[20px]">error</span>
+        @TempData["Error"]
+    </div>
+}
+
+<!-- Header -->
+<div class="mb-10 animate-[fadeUp_0.5s_ease_forwards] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-[#E8F5EE] dark:bg-[#1B2A24] text-[#2E7D5B] dark:text-[#7DD9AB] flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-[24px]">school</span>
+        </div>
+        <div>
+            <h1 class="font-serif text-3xl font-bold text-gray-900 dark:text-[#E6F1EC] tracking-tight">Instructor Dashboard</h1>
+            <p class="font-sans text-slate-500 dark:text-[#A7B8B0] text-sm">Manage your courses, content, and student engagement.</p>
+        </div>
+    </div>
+    <a asp-action="Create" class="inline-flex items-center gap-2 bg-[#2E7D5B] hover:bg-[#096444] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">add_circle</span> Create New Course
+    </a>
+</div>
+
+<!-- Stats Row -->
+@if (Model != null)
+{
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 animate-[fadeUp_0.55s_ease_forwards]">
+        <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 flex flex-col gap-1 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Total Courses</span>
+            <span class="text-3xl font-serif font-bold text-gray-900 dark:text-[#E6F1EC]">@Model.TotalCourses</span>
+        </div>
+        <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 flex flex-col gap-1 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Published</span>
+            <span class="text-3xl font-serif font-bold text-[#2E7D5B] dark:text-[#7DD9AB]">@Model.PublishedCourses</span>
+        </div>
+        <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 flex flex-col gap-1 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Total Students</span>
+            <span class="text-3xl font-serif font-bold text-gray-900 dark:text-[#E6F1EC]">@Model.TotalStudents</span>
+        </div>
+        <div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-2xl p-5 flex flex-col gap-1 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Earnings</span>
+            <span class="text-3xl font-serif font-bold text-[#2E7D5B] dark:text-[#7DD9AB]">$@Model.TotalEarnings.ToString("N0")</span>
+        </div>
+    </div>
+
+    @if (Model.BestSellingCourse != null)
+    {
+        <div class="mb-10 animate-[fadeUp_0.6s_ease_forwards] bg-gradient-to-r from-[#2E7D5B] to-[#1a5c41] dark:from-[#1B2A24] dark:to-[#162119] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm border border-[#2E7D5B]/20">
+            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-white text-[24px]">emoji_events</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-xs font-bold text-white/70 uppercase tracking-wider mb-1">Best Selling Course</p>
+                <p class="font-serif text-xl font-bold text-white">@Model.BestSellingCourse.Title</p>
+                <p class="text-white/70 text-sm">@Model.BestSellingCourseStudentCount students enrolled</p>
+            </div>
+            <a asp-action="Edit" asp-route-id="@Model.BestSellingCourse.Id"
+               class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all">
+                <span class="material-symbols-outlined text-[18px]">edit</span> Edit Course
+            </a>
+        </div>
+    }
+}
+
+<!-- Courses Table -->
+<div class="bg-white dark:bg-[#16211D] border border-[#E3E8E5] dark:border-[#23332D] rounded-3xl shadow-sm animate-[fadeUp_0.65s_ease_forwards] overflow-hidden">
+    <div class="px-6 py-5 border-b border-[#E3E8E5] dark:border-[#23332D] flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#2E7D5B] dark:text-[#7DD9AB]">library_books</span>
+        <h2 class="font-serif text-xl font-bold text-gray-900 dark:text-[#E6F1EC]">My Courses</h2>
+        <span class="ml-auto text-sm text-slate-400 dark:text-[#A7B8B0] font-medium">@metrics.Count course(s)</span>
+    </div>
+    <div class="overflow-x-auto">
+        @if (!metrics.Any())
+        {
+            <div class="py-20 flex flex-col items-center gap-3 text-slate-400 dark:text-[#A7B8B0]">
+                <span class="material-symbols-outlined text-[48px] opacity-40">library_add</span>
+                <p class="text-lg font-medium">No courses yet</p>
+                <a asp-action="Create" class="mt-2 inline-flex items-center gap-2 bg-[#2E7D5B] hover:bg-[#096444] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                    <span class="material-symbols-outlined text-[18px]">add</span> Create your first course
+                </a>
+            </div>
+        }
+        else
+        {
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-[#F0F5F2] dark:bg-[#1B2A24] border-b border-[#E3E8E5] dark:border-[#23332D]">
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Course</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Category</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Price</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider">Students</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-[#A7B8B0] uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E3E8E5] dark:divide-[#23332D]">
+                    @foreach (var item in metrics)
+                    {
+                        <tr class="hover:bg-slate-50 dark:hover:bg-[#101411] transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="font-serif font-bold text-base text-gray-900 dark:text-[#E6F1EC] mb-1">@item.Title</div>
+                                <div class="text-xs text-slate-500 dark:text-[#A7B8B0] flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[13px]">event</span>
+                                    @item.CreatedAt.ToString("MMM dd, yyyy")
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#E8F5EE] dark:bg-[#1B2A24] text-[#2E7D5B] dark:text-[#7DD9AB] border border-[#2E7D5B]/20">
+                                    @(string.IsNullOrEmpty(item.Title) ? "—" : "Course")
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @{
+                                    var statusColor = item.Status?.ToLower() switch {
+                                        "published" => "bg-[#F0FDF4] text-[#166534] border-[#86EFAC] dark:bg-[#1B2A1E] dark:text-[#88d6af] dark:border-[#2E7D5B]",
+                                        "draft" => "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
+                                        _ => "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                                    };
+                                }
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border @statusColor">
+                                    @(item.Status ?? "Unknown")
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-[#E6F1EC]">
+                                $@item.Price.ToString("N2")
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-1.5 text-slate-600 dark:text-[#A7B8B0]">
+                                    <span class="material-symbols-outlined text-[16px]">group</span>
+                                    <span class="font-medium">@item.StudentCount</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <a asp-action="Edit" asp-route-id="@item.CourseId"
+                                       class="inline-flex items-center gap-1.5 bg-[#F0F5F2] dark:bg-[#1B2A24] hover:bg-[#2E7D5B] hover:text-white text-[#2E7D5B] dark:text-[#7DD9AB] dark:hover:bg-[#2E7D5B] dark:hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+                                        <span class="material-symbols-outlined text-[15px]">edit</span> Edit
+                                    </a>
+                                    @if (item.Status?.ToLower() != "published")
+                                    {
+                                        <form asp-action="Publish" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.CourseId" />
+                                            <button type="submit"
+                                                    class="inline-flex items-center gap-1.5 bg-[#2E7D5B] hover:bg-[#096444] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+                                                <span class="material-symbols-outlined text-[15px]">publish</span> Publish
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
