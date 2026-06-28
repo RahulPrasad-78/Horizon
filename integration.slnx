@@ -15,6 +15,8 @@
   <Folder Name="/services/student-service/">
     <Project Path="services/student-service/LearningPlatform.StudentService.csproj" />
   </Folder>
-  <Folder Name="/services/teacher-service/" />
+  <Folder Name="/services/teacher-service/">
+    <Project Path="services/teacher-service/teacherAPI.csproj" />
+  </Folder>
   <Project Path="Horizon.MVC/Horizon.MVC.csproj" />
 </Solution>
