@@ -85,3 +85,8 @@ docker-compose.override.yml
 # KEEP EMPTY FOLDERS (ALLOW .gitkeep)
 ############################################
 !*/.gitkeep
+
+############################################
+# BUG FIX / ANALYSIS REPORT
+############################################
+bug_fix

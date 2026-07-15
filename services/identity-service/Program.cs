@@ -133,7 +133,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddHttpClient("StudentApi", client =>
 {
-    client.BaseAddress = new Uri(configuration["StudentApi:BaseUrl"] ?? "https://localhost:7090/");
+    client.BaseAddress = new Uri(configuration["StudentApi:BaseUrl"] ?? "https://localhost:7002/");
 });
 
 var app = builder.Build();
@@ -154,41 +154,41 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Seed Admin User
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-//    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-//    const string adminEmail = "krish@learningplatform.com";
-//    const string adminPassword = "Krish@123"; 
+    const string adminEmail = "krish@learningplatform.com";
+    const string adminPassword = "Krish@123"; 
 
-//    // Ensure Admin role exists
-//    if (!await roleManager.RoleExistsAsync("Admin"))
-//    {
-//        await roleManager.CreateAsync(new IdentityRole("Admin"));
-//    }
+    // Ensure Admin role exists
+    if (!await roleManager.RoleExistsAsync("Admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    }
 
-//    // Create admin user if it doesn't exist
-//    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-//    if (adminUser == null)
-//    {
-//        var newAdmin = new ApplicationUser
-//        {
-//            UserName = adminEmail,
-//            Email = adminEmail,
-//            DisplayName = "System Administrator",
-//            IsApproved = true,
-//            ApprovalDate = DateTime.UtcNow
-//        };
+    // Create admin user if it doesn't exist
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        var newAdmin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            DisplayName = "System Administrator",
+            IsApproved = true,
+            ApprovalDate = DateTime.UtcNow
+        };
 
-//        var result = await userManager.CreateAsync(newAdmin, adminPassword);
-//        if (result.Succeeded)
-//        {
-//            await userManager.AddToRoleAsync(newAdmin, "Admin");
-//        }
-//    }
-//}
+        var result = await userManager.CreateAsync(newAdmin, adminPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdmin, "Admin");
+        }
+    }
+}
 
     app.Run();
 }

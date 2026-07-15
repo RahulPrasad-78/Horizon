@@ -73,14 +73,14 @@ namespace LearningPlatform.StudentService
             builder.Services.AddHttpClient("CourseService", client =>
             {
                 client.BaseAddress = new Uri(
-                    builder.Configuration["ServiceUrls:CourseService"] ?? "https://localhost:7081/");
+                    builder.Configuration["ServiceUrls:CourseService"] ?? "https://localhost:7003/");
                 client.Timeout = TimeSpan.FromSeconds(3);
             }).AddPolicyHandler(retryPolicy);
 
             builder.Services.AddHttpClient("ChatService", client =>
             {
                 client.BaseAddress = new Uri(
-                    builder.Configuration["ServiceUrls:ChatService"] ?? "https://localhost:7082/");
+                    builder.Configuration["ServiceUrls:ChatService"] ?? "https://localhost:7004/");
             }).AddPolicyHandler(retryPolicy);
 
             builder.Services.AddScoped<IChatIntegrationService, ChatIntegrationService>();

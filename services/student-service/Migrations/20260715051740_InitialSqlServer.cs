@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LearningPlatform.StudentService.Migrations
 {
     /// <inheritdoc />
-    public partial class INIT : Migration
+    public partial class InitialSqlServer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -71,6 +71,7 @@ namespace LearningPlatform.StudentService.Migrations
                 {
                     StudentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     Skills = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PreferredLevel = table.Column<string>(type: "nvarchar(max)", nullable: false),
