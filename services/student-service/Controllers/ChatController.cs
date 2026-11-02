@@ -1,12 +1,10 @@
 using LearningPlatform.StudentService.Common;
 using LearningPlatform.StudentService.DTOs;
 using LearningPlatform.StudentService.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LearningPlatform.StudentService.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ChatController : BaseController
@@ -61,10 +59,10 @@ namespace LearningPlatform.StudentService.Controllers
 
         // POST /api/chat/sessions/start/{teacherId}
         // Start a new conversation with a teacher
-        [HttpPost("sessions/start/{teacherId:int}")]
-        public async Task<IActionResult> StartConversation(int teacherId)
+        [HttpPost("sessions/start/{teacherId}")]
+        public async Task<IActionResult> StartConversation(string teacherId)
         {
-            if (teacherId <= 0)
+            if (string.IsNullOrWhiteSpace(teacherId))
                 return BadRequest(ApiResponseDto<string>.Fail("Invalid teacher id"));
 
             _logger.LogInformation("Starting conversation with teacher {TeacherId}", teacherId);

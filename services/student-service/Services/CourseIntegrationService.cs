@@ -1,4 +1,4 @@
-﻿using LearningPlatform.StudentService.Common;
+using LearningPlatform.StudentService.Common;
 using LearningPlatform.StudentService.DTOs;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -94,8 +94,12 @@ namespace LearningPlatform.StudentService.Services
             {
                 var client = _factory.CreateClient("CourseService");
                 var payload = new { studentId, courseId };
-                // Use correct route: api/coursesapi/enroll instead of api/courses/enroll
-                await client.PostAsJsonAsync("api/coursesapi/enroll", payload);
+                var response = await client.PostAsJsonAsync("api/coursesapi/enroll", payload);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("CourseService rejected enrollment notification for course {CourseId}: {StatusCode}",
+                        courseId, (int)response.StatusCode);
+                }
             }
             catch (Exception ex)
             {

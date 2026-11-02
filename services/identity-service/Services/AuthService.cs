@@ -3,7 +3,6 @@ using LearningPlatformAuth.Repositories;
 using LearningPlatformAuth.Responses;
 using LearningPlatformAuth.Exceptions;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -16,16 +15,14 @@ namespace LearningPlatformAuth.Services
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
 
-        public AuthService(IAuthRepository repo, ITokenService tokenService, IMapper mapper, ILogger<AuthService> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public AuthService(IAuthRepository repo, ITokenService tokenService, IMapper mapper, ILogger<AuthService> logger, IHttpClientFactory httpClientFactory)
         {
             _repo = repo;
             _tokenService = tokenService;
             _mapper = mapper;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
         }
 
         public async Task<object> RegisterAsync(RegisterRequest model)
@@ -52,13 +49,18 @@ namespace LearningPlatformAuth.Services
                 try
                 {
                     var client = _httpClientFactory.CreateClient("StudentApi");
-                    await client.PostAsJsonAsync(
+                    var response = await client.PostAsJsonAsync(
                         $"api/profile/seed/{user.Id}",
                         new
                         {
                             FullName = user.DisplayName ?? user.Email ?? "",
                             Role = model.Role
                         });
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Student profile bootstrap returned {StatusCode} for user {UserId}",
+                            (int)response.StatusCode, user.Id);
+                    }
                 }
                 catch (Exception ex)
                 {

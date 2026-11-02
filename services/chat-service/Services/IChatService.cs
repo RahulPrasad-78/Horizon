@@ -7,5 +7,6 @@ namespace WebApplication1.Services
         Task<ChatSessionResponse> RequestChatAsync(CreateSessionRequest dto);
         Task<MessageResponse> ProcessMessageAsync(SendMessageRequest dto);
         Task<IEnumerable<MessageResponse>> GetHistoryAsync(int sessionId);
+        Task<IEnumerable<ChatSessionResponse>> GetSessionsForStudentAsync(string studentId);
     }
 }

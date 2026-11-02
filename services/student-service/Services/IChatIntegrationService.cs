@@ -7,6 +7,6 @@ namespace LearningPlatform.StudentService.Services
         Task<List<ConversationDto>> GetConversationsAsync(string studentId);
         Task<List<ChatMessageDto>> GetMessagesAsync(int chatSessionId);
         Task SendMessageAsync(int chatSessionId, string content);
-        Task<ConversationDto> StartConversationAsync(string studentId, int teacherId);
+        Task<ConversationDto> StartConversationAsync(string studentId, string teacherId);
     }
 }

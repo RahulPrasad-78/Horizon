@@ -62,9 +62,18 @@ namespace LearningPlatform.StudentService.Controllers
             return Ok(ApiResponseDto<string>.Ok("Profile updated"));
         }
 
+        // Called service-to-service by identity-service on student registration (no user token yet),
+        // so it is authenticated with the shared ServiceAuth:Key instead of a JWT.
+        [AllowAnonymous]
         [HttpPost("seed/{studentId}")]
-        public async Task<IActionResult> Seed(string studentId, [FromBody] ProfileDto dto)
+        public async Task<IActionResult> Seed(string studentId, [FromBody] ProfileDto dto,
+            [FromHeader(Name = "X-Service-Key")] string? serviceKey,
+            [FromServices] IConfiguration config)
         {
+            var expectedKey = config["ServiceAuth:Key"];
+            if (string.IsNullOrEmpty(expectedKey) || serviceKey != expectedKey)
+                return Unauthorized();
+
             await _service.SaveAsync(studentId, dto);
             return Ok(ApiResponseDto<string>.Ok("Student profile created"));
         }

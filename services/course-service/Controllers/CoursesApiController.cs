@@ -4,7 +4,6 @@ using Courses.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using Courses.Models.DTOs;
-using Microsoft.Extensions.Logging;
 
 namespace Courses.Api.Controllers
 {
@@ -13,13 +12,15 @@ namespace Courses.Api.Controllers
     public class CoursesApiController : ControllerBase
     {
         private readonly ICourseService _courseService;
+        private readonly IEnrollmentService _enrollmentService;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
         private readonly ILogger<CoursesApiController> _logger;
 
-        public CoursesApiController(ICourseService courseService, IMapper mapper, IUserContext userContext, ILogger<CoursesApiController> logger)
+        public CoursesApiController(ICourseService courseService, IEnrollmentService enrollmentService, IMapper mapper, IUserContext userContext, ILogger<CoursesApiController> logger)
         {
             _courseService = courseService;
+            _enrollmentService = enrollmentService;
             _mapper = mapper;
             _userContext = userContext;
             _logger = logger;
@@ -253,13 +254,28 @@ namespace Courses.Api.Controllers
             return CreatedAtAction(nameof(GetCourse), new { id = id }, video);
         }
 
-        // POST: api/coursesapi/enroll (for notifications from student-service)
+        // POST: api/coursesapi/enroll (service-to-service from student-service, authenticated with ServiceAuth:Key)
         [HttpPost("enroll")]
         [AllowAnonymous]
-        public IActionResult NotifyEnrollment([FromBody] object payload)
+        public async Task<IActionResult> NotifyEnrollment([FromBody] EnrollmentCreateDTO request,
+            [FromHeader(Name = "X-Service-Key")] string? serviceKey,
+            [FromServices] IConfiguration config)
         {
-            _logger.LogInformation("Enrollment notification received: {Payload}", payload);
-            return Ok(new { Message = "Enrollment received" });
+            var expectedKey = config["ServiceAuth:Key"];
+            if (string.IsNullOrEmpty(expectedKey) || serviceKey != expectedKey)
+                return Unauthorized();
+
+            if (string.IsNullOrEmpty(request.StudentId))
+                return BadRequest(new { Message = "StudentId is required." });
+
+            if (await _courseService.GetCourseByIdAsync(request.CourseId) == null)
+                return NotFound(new { Message = "Course not found." });
+
+            var enrollment = await _enrollmentService.EnrollStudentAsync(request.CourseId, request.StudentId);
+            _logger.LogInformation("Enrollment recorded from student-service. StudentId: {StudentId}, CourseId: {CourseId}",
+                request.StudentId, request.CourseId);
+
+            return Ok(_mapper.Map<EnrollmentReadDTO>(enrollment));
         }
 
         // POST: api/coursesapi/progress (for notifications from student-service)

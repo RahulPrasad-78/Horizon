@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 using WebApplication1.DTOs;
 using WebApplication1.Services;
 
@@ -44,6 +43,16 @@ namespace WebApplication1.Controllers
             _logger.LogInformation("Message stored successfully. MessageId: {MessageId}, ChatSessionId: {ChatSessionId}",
                 result.Id, result.ChatSessionId);
 
+            return Ok(result);
+        }
+
+        // GET: api/chat/sessions?studentId=abc
+        [HttpGet("sessions")]
+        public async Task<ActionResult<IEnumerable<ChatSessionResponse>>> GetSessions([FromQuery] string studentId)
+        {
+            _logger.LogInformation("Fetching chat sessions for StudentId: {StudentId}", studentId);
+
+            var result = await _chatService.GetSessionsForStudentAsync(studentId);
             return Ok(result);
         }
 

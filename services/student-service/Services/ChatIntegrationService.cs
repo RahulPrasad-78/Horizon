@@ -18,9 +18,9 @@ namespace LearningPlatform.StudentService.Services
             try
             {
                 var client = _factory.CreateClient("ChatService");
-                var result = await client.GetFromJsonAsync<List<ConversationDto>>(
-                    $"api/chat/conversations?studentId={studentId}");
-                return result ?? new List<ConversationDto>();
+                var sessions = await client.GetFromJsonAsync<List<ChatSessionResponse>>(
+                    $"api/chat/sessions?studentId={Uri.EscapeDataString(studentId)}");
+                return sessions?.Select(ToConversation).ToList() ?? new List<ConversationDto>();
             }
             catch (Exception ex)
             {
@@ -35,7 +35,7 @@ namespace LearningPlatform.StudentService.Services
             {
                 var client = _factory.CreateClient("ChatService");
                 var result = await client.GetFromJsonAsync<List<ChatMessageDto>>(
-                    $"api/chat/sessions/{chatSessionId}/messages");
+                    $"api/chat/history/{chatSessionId}");
                 return result ?? new List<ChatMessageDto>();
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace LearningPlatform.StudentService.Services
             {
                 var client = _factory.CreateClient("ChatService");
                 var payload = new { chatSessionId, senderRole = "Student", content };
-                var response = await client.PostAsJsonAsync("api/chat/messages", payload);
+                var response = await client.PostAsJsonAsync("api/chat/send-message", payload);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
@@ -61,16 +61,16 @@ namespace LearningPlatform.StudentService.Services
             }
         }
 
-        public async Task<ConversationDto> StartConversationAsync(string studentId, int teacherId)
+        public async Task<ConversationDto> StartConversationAsync(string studentId, string teacherId)
         {
             try
             {
                 var client = _factory.CreateClient("ChatService");
                 var payload = new { studentId, teacherId };
-                var response = await client.PostAsJsonAsync("api/chat/sessions", payload);
+                var response = await client.PostAsJsonAsync("api/chat/request-session", payload);
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<ConversationDto>();
-                return result ?? new ConversationDto();
+                var session = await response.Content.ReadFromJsonAsync<ChatSessionResponse>();
+                return session is null ? new ConversationDto() : ToConversation(session);
             }
             catch (Exception ex)
             {
@@ -78,5 +78,15 @@ namespace LearningPlatform.StudentService.Services
                 throw new Exception("Chat service is currently unavailable");
             }
         }
+
+        private static ConversationDto ToConversation(ChatSessionResponse session) => new()
+        {
+            ChatSessionId = session.Id,
+            TeacherId = session.TeacherId,
+            LastMessageAt = session.CreatedAt
+        };
+
+        // Shape returned by chat-service (api/chat/request-session, api/chat/sessions)
+        private sealed record ChatSessionResponse(int Id, string TeacherId, string StudentId, DateTime CreatedAt);
     }
 }

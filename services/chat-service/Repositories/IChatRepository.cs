@@ -7,6 +7,7 @@ namespace WebApplication1.Repositories
         Task<ChatSession> CreateSessionAsync(ChatSession session);
         Task<ChatSession> GetSessionAsync(int sessionId);
         Task<ChatSession> GetSessionByUsersAsync(string studentId, string teacherId);
+        Task<IEnumerable<ChatSession>> GetSessionsByStudentAsync(string studentId);
         Task<Message> SaveMessageAsync(Message message); 
         Task<IEnumerable<Message>> GetChatHistoryAsync(int sessionId);
     }

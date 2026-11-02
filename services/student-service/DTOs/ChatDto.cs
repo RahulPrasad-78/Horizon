@@ -19,7 +19,7 @@ namespace LearningPlatform.StudentService.DTOs
     public class ConversationDto
     {
         public int ChatSessionId { get; set; }
-        public int TeacherId { get; set; }
+        public string TeacherId { get; set; } = string.Empty;
         public string TeacherName { get; set; } = string.Empty;
         public string LastMessage { get; set; } = string.Empty;
         public DateTime LastMessageAt { get; set; }

@@ -46,6 +46,15 @@ namespace WebApplication1.Repositories
                 .FirstOrDefaultAsync(s => s.StudentId == studentId && s.TeacherId == teacherId);
         }
 
+        public async Task<IEnumerable<ChatSession>> GetSessionsByStudentAsync(string studentId)
+        {
+            return await _context.ChatSessions
+                .AsNoTracking()
+                .Where(s => s.StudentId == studentId)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<Message> SaveMessageAsync(Message message)
         {
             _context.Messages.Add(message);

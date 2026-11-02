@@ -28,8 +28,8 @@ namespace WebApplication1.Services
             if (wordCount < 3)
                 throw new BadRequestException("Message must contain at least 3 words.");
 
-            var session = await _repo.GetSessionAsync(dto.ChatSessionId)
-                ?? throw new NotFoundException("Chat session not found.");
+            if (await _repo.GetSessionAsync(dto.ChatSessionId) == null)
+                throw new NotFoundException("Chat session not found.");
 
             var message = new Message
             {
@@ -68,6 +68,12 @@ namespace WebApplication1.Services
             await _repo.CreateSessionAsync(session);
 
             return _mapper.Map<ChatSessionResponse>(session);
+        }
+
+        public async Task<IEnumerable<ChatSessionResponse>> GetSessionsForStudentAsync(string studentId)
+        {
+            var sessions = await _repo.GetSessionsByStudentAsync(studentId);
+            return _mapper.Map<IEnumerable<ChatSessionResponse>>(sessions);
         }
 
         public async Task<IEnumerable<MessageResponse>> GetHistoryAsync(int sessionId)
