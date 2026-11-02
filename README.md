@@ -1,125 +1,201 @@
-# 🌅 Horizon - Microservices Learning Platform (.NET 10)
+# 🌅 Horizon – Microservices Learning Platform (.NET 10)
 
-Horizon is a modern, high-performance, microservices-based e-learning and student management platform built on **.NET 10**. It features a unified frontend, an API gateway for centralized routing, and five specialized backend services using a mix of SQL Server, Azure SQL, and Neon PostgreSQL databases.
+Horizon is an e-learning platform built to practise **how requests travel through an API gateway** to a set of independent microservices. One MVC website talks to a **YARP gateway**, and the gateway routes each request to one of five backend services. Every data-owning service has its own **PostgreSQL** database (hosted on [Neon](https://neon.tech) or run locally) and logs with **Serilog**.
+
+> 📖 **New to the project?** Open [`docs/horizon-guide.html`](docs/horizon-guide.html) in a browser. It is a beginner-friendly, illustrated walkthrough of how everything works.
 
 ---
 
-## 🏛️ System Architecture
-
-Horizon is designed around a microservices architecture. Client requests are routed through a Yarp-based API Gateway, which forwards them to the respective service after applying rate limiting and token validation.
+## 🏛️ Architecture
 
 ```mermaid
 graph TD
-    Client[Horizon.MVC Frontend<br/>Port 7006] -->|HTTPS Requests| Gateway[GatewayAPI Gateway<br/>Port 7000]
+    Browser[Browser] --> MVC[Horizon.MVC website<br/>https://localhost:7006]
+    MVC -->|HTTPS + JWT| Gateway[YARP API Gateway<br/>https://localhost:7000]
 
-    Gateway -->|/auth/*| AuthSvc[Identity Service<br/>Port 7005]
-    Gateway -->|/teachers/*| TeacherSvc[Teacher Service<br/>Port 7001]
-    Gateway -->|/courses/*| CourseSvc[Course Service<br/>Port 7003]
-    Gateway -->|/students/*| StudentSvc[Student Service<br/>Port 7002]
-    Gateway -->|/chat/*| ChatSvc[Chat Service<br/>Port 7004]
+    Gateway -->|/auth/*| Identity[Identity Service<br/>:7005]
+    Gateway -->|/teachers/* 🔒| Teacher[Teacher Service<br/>:7001]
+    Gateway -->|/courses/*| Course[Course Service<br/>:7003]
+    Gateway -->|/students/*| Student[Student Service<br/>:7002]
+    Gateway -->|/chat/* 🔒| Chat[Chat Service<br/>:7004]
 
-    AuthSvc -->|horizonDB| SqlServer[(Local SQL Express)]
-    TeacherSvc -->|API Calls| CourseSvc
-    CourseSvc -->|horizonCourseDB| SqlServer
-    StudentSvc -->|neondb| NeonPg[(Neon PostgreSQL)]
-    ChatSvc -->|Azure SQL| AzureSql[(Azure SQL DB)]
+    Identity -.->|create profile| Student
+    Teacher -.->|course CRUD, enrolments| Course
+    Student -.->|course lookup, enrolment sync| Course
+    Student -.->|chat sessions & messages| Chat
+
+    Identity --> DB1[(horizonDB)]
+    Course --> DB2[(horizonCourseDB)]
+    Student --> DB3[(horizonStudentDB)]
+    Chat --> DB4[(horizonChatDB)]
 ```
 
+🔒 = the gateway itself requires a valid JWT on this route. Dotted lines are direct service-to-service HTTP calls.
+
+### Services
+
+| Project | Path | Port (HTTPS) | Responsibility | Database |
+| :-- | :-- | :-: | :-- | :-- |
+| **Horizon.MVC** | `Horizon.MVC/` | 7006 | Server-rendered website for students, teachers and admins | – (cookie + session) |
+| **Gateway** | `gateway/GatewayAPI/` | 7000 | Routing, JWT validation (teacher/chat), rate limiting (100 req / 10 s → `429`) | – |
+| **Identity** | `services/identity-service/` | 7005 | Register, login, JWT issuing, teacher approval, admin seed | `horizonDB` |
+| **Teacher** | `services/teacher-service/` | 7001 | Teacher dashboard and course workflow (calls Course) | – |
+| **Course** | `services/course-service/` | 7003 | Courses, videos, comments, enrolments | `horizonCourseDB` |
+| **Student** | `services/student-service/` | 7002 | Profile, dashboard, bookmarks, progress, recommendations, enrolling | `horizonStudentDB` |
+| **Chat** | `services/chat-service/` | 7004 | Student ↔ teacher chat sessions and messages | `horizonChatDB` |
+
+### Gateway routes
+
+| Public path | Forwarded to | Notes |
+| :-- | :-- | :-- |
+| `/auth/{**}` | Identity `:7005` | prefix `/auth` removed |
+| `/students/{**}` | Student `:7002` | prefix removed, rate limited |
+| `/courses/{**}` | Course `:7003` | prefix removed, rate limited |
+| `/teachers/{**}` | Teacher `:7001` | requires JWT, rate limited |
+| `/chat/{**}` | Chat `:7004` | requires JWT, rate limited |
+
+Example: `GET https://localhost:7000/courses/api/CoursesApi` reaches the Course service as `GET /api/CoursesApi`.
+
+### Authentication
+
+- **People** authenticate with a **JWT** (60 min) issued by Identity at `POST /auth/api/Auth/login`. The same `Jwt:Key / Issuer / Audience` must be configured in the gateway, identity, course, student and teacher services.
+- **Teachers** must be approved by an **Admin** before they can log in.
+- **Services** calling each other without a user (Identity → Student profile creation, Student → Course enrolment sync) send a shared secret in the `X-Service-Key` header, checked against `ServiceAuth:Key`.
+
 ---
 
-## 🔍 Service Catalog & Port Mapping
+## ⚙️ Prerequisites
 
-| Service Name | Project Path | Description | Endpoint Port | Database / Persistence |
-| :--- | :--- | :--- | :--- | :--- |
-| **GatewayAPI** | `gateway/GatewayAPI/GatewayAPI.csproj` | Reverse Proxy API Gateway using YARP. Centralizes routing, security, and rate limiting. | `https://localhost:7000` | *None* |
-| **Identity Service** | `services/identity-service/LearningPlatformAuth.csproj` | Handles authentication, registration, role-based security (Student/Teacher), and JWT generation. | `https://localhost:7005` | Local SQL Express (`horizonDB`) |
-| **Teacher Service** | `services/teacher-service/teacherAPI.csproj` | Manages teacher profiles, dashboards, course drafts, and publication workflows. | `https://localhost:7001` | Integrates via APIs |
-| **Course Service** | `services/course-service/Course.csproj` | Manages courses, lessons, categories, reviews, comments, and enrollment logs. | `https://localhost:7003` | Local SQL Express (`horizonCourseDB`) |
-| **Student Service** | `services/student-service/LearningPlatform.StudentService.csproj` | Manages student profiles, XP tracking, achievements, dashboard statistics, recommendations, and bookmarks. | `https://localhost:7002` | Neon Serverless PostgreSQL (`neondb`) |
-| **Chat Service** | `services/chat-service/WebApplication1.csproj` | Real-time chat messaging and persistence between students and teachers. | `https://localhost:7004` | Azure SQL Database |
-| **Horizon.MVC** | `Horizon.MVC/Horizon.MVC.csproj` | Unified ASP.NET Core MVC Frontend utilizing the **Academic Premium** design system. | `https://localhost:7006` | Session cookies (JWT stored in HTTP-Only cookie) |
-
----
-
-## 🎨 Frontend Design System & Theme
-
-The frontend is housed in [Horizon.MVC](file:///C:/Users/ravis/Desktop/Horizon/Horizon.MVC) and implements the **Academic Premium** design system:
-- **Light Mode**: Warm off-white backgrounds (`#f2fbff`) with deep forest green primary colors (`#096444`).
-- **Dark Mode**: Deep green-tinted charcoal (`#101411`) with refreshing mint accents (`#7dd9ab`).
-- **Typography**: *Newsreader* (serif) for headlines & editorial feel, and *Inter* (sans-serif) for clean UI controls.
-- **Theme Toggle**: Real-time toggling stored in local preferences.
-
----
-
-## ⚙️ Prerequisites & Setup
-
-Ensure you have the following installed on your development machine:
 1. **.NET 10 SDK**
-2. **Local MS SQL Server / SQL Express** instance running.
-3. A **Neon PostgreSQL** account (see [database_setup_neon.md](file:///C:/Users/ravis/Desktop/Horizon/database_setup_neon.md) for full configuration).
+2. A **PostgreSQL** server: a free [Neon](https://neon.tech) project (recommended) or local PostgreSQL 16+
+3. The HTTPS dev certificate trusted once: `dotnet dev-certs https --trust`
+4. *(Optional)* `dotnet tool install --global dotnet-ef` to create new migrations
 
-### Database Configuration
+## 🗄️ Database setup
 
-1. **Local SQL Express**: Ensure standard connection strings in `services/identity-service/appsettings.json` and `services/course-service/appsettings.json` match your local SQL Server instance.
-2. **Neon PostgreSQL**: Update the `"ConnectionStrings:DefaultConnection"` in `services/student-service/appsettings.json` with your credentials:
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Host=ep-YOUR-HOST.us-east-2.aws.neon.tech;Database=neondb;Username=YOUR-USERNAME;Password=YOUR-PASSWORD;SSL Mode=Require;Trust Server Certificate=True;"
-   }
-   ```
+Each data service creates and migrates **its own database on startup**, so you only need a running server and the four empty databases:
+
+| Service | Config key | Database name |
+| :-- | :-- | :-- |
+| Identity | `ConnectionStrings:DefaultConnection` | `horizonDB` |
+| Course | `ConnectionStrings:DefaultConnection` | `horizonCourseDB` |
+| Student | `ConnectionStrings:DefaultConnection` | `horizonStudentDB` |
+| Chat | `ConnectionStrings:WebApplication1Context` | `horizonChatDB` |
+
+The committed `appsettings.json` files contain only a harmless `localhost … Password=CHANGE_ME` placeholder. Put your **real** connection string in **user-secrets** (stored on your computer, never committed):
+
+```powershell
+cd services/identity-service
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=ep-xxxx.neon.tech;Database=horizonDB;Username=neondb_owner;Password=YOUR_PASSWORD;SSL Mode=Require;Timeout=30"
+
+cd ../course-service
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=ep-xxxx.neon.tech;Database=horizonCourseDB;Username=neondb_owner;Password=YOUR_PASSWORD;SSL Mode=Require;Timeout=30"
+
+cd ../student-service
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=ep-xxxx.neon.tech;Database=horizonStudentDB;Username=neondb_owner;Password=YOUR_PASSWORD;SSL Mode=Require;Timeout=30"
+
+cd ../chat-service
+dotnet user-secrets set "ConnectionStrings:WebApplication1Context" "Host=ep-xxxx.neon.tech;Database=horizonChatDB;Username=neondb_owner;Password=YOUR_PASSWORD;SSL Mode=Require;Timeout=30"
+```
+
+At startup .NET merges settings from `appsettings.json` → user-secrets (Development only) → environment variables, and the **later source wins**. Servers can use environment variables instead, e.g. `ConnectionStrings__DefaultConnection`. Full Neon walkthrough (creating the four databases, pitfalls such as database-name capitalisation): [`database_setup_neon.md`](database_setup_neon.md).
+
+### Other settings
+
+| Key | Where | Purpose |
+| :-- | :-- | :-- |
+| `Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience` | gateway, identity, course, student, teacher | Must be identical so every service accepts tokens from Identity |
+| `ServiceAuth:Key` | identity, student, course | Shared secret for service-to-service calls (must match) |
+| `Admin:Email`, `Admin:Password` | identity | Admin account seeded on first start |
+| `ServiceUrls:*`, `StudentApi:BaseUrl` | student, teacher, identity | Addresses of other services |
+| `GatewayUrl` | Horizon.MVC | Where the website sends every API call |
+| `AutoMapper:LicenseKey` | chat, course, identity | Optional free key; without it AutoMapper only logs a notice |
+
+> The defaults (JWT key, `ServiceAuth:Key`, admin account `krish@learningplatform.com` / `Krish@123`) are for **local learning only**. Move them to user-secrets or environment variables before deploying anywhere public.
 
 ---
 
-## 🚀 Running the Platform
+## 🚀 Run
 
-You can boot up the entire ecosystem concurrently using the provided PowerShell script:
+```powershell
+./run-all.ps1
+```
 
-1. Open PowerShell as an administrator.
-2. Navigate to the root directory.
-3. Run the startup script:
-   ```powershell
-   ./run-all.ps1
-   ```
-4. This script starts all services and the MVC frontend in separate terminal windows.
-5. Access the user portal by visiting `https://localhost:7006`.
+This opens seven windows (gateway, identity, teacher, course, chat, student, MVC). In Visual Studio you can use the multi-start profile `integration.slnLaunch` instead. Then open **https://localhost:7006**.
+
+Typical first run:
+1. Register a **Student** and a **Teacher** on the website.
+2. Log in as the admin and approve the teacher.
+3. Log in as the teacher, create and publish a course.
+4. Log in as the student, enrol in the course, and start a chat.
+
+Every service has Swagger at `https://localhost:<port>/swagger` in Development (Chat shows it on its root page).
+
+### Try the gateway from a terminal
+
+```bash
+# public data
+curl -k https://localhost:7000/courses/api/CoursesApi
+# protected route without a token -> 401 from the gateway
+curl -k -i https://localhost:7000/teachers/api/teacher/courses
+# log in (admin) and use the returned token
+curl -k -X POST https://localhost:7000/auth/api/Auth/login -H "Content-Type: application/json" \
+     -d '{"email":"krish@learningplatform.com","password":"Krish@123"}'
+```
+
+Stop one service (for example Course) and call its route: the gateway answers `502` while the other routes keep working.
 
 ---
 
-## 🔄 Recent .NET 10 Migration Highlights
+## 🧱 Tech stack
 
-The solution has been fully upgraded to **.NET 10** with several modern refactorings:
-- **Library Modernization**: Removed deprecated `AutoMapper.Extensions.Microsoft.DependencyInjection` references, migrating to standard `AutoMapper` 13+ dependency injection.
-- **Cross-Platform Storage**: Migrated `student-service` from SQL Server to PostgreSQL (Neon) for serverless database hosting.
-- **Frontend Consolidation**: Unified five individual frontend web apps (`Chat.MVC`, `LearningPlatform.Mvc`, `Student.MVC`, `TeacherDashboardMvc`, and `LearningPlatformFrontend`) into one unified [Horizon.MVC](file:///C:/Users/ravis/Desktop/Horizon/Horizon.MVC) application.
-- **Gateway Alignment**: Standardized YARP reverse-proxy routes to point directly to the configured `.NET 10` development ports.
+| Area | Technology |
+| :-- | :-- |
+| Runtime | .NET 10, ASP.NET Core |
+| Gateway | YARP `Yarp.ReverseProxy` 2.3.0 |
+| Data | EF Core 10.0.9 + `Npgsql.EntityFrameworkCore.PostgreSQL` 10.0.2, ASP.NET Identity |
+| Auth | JWT Bearer (`Microsoft.AspNetCore.Authentication.JwtBearer` 10.0.9) |
+| Validation / mapping | FluentValidation 11.12, AutoMapper 15.1.1 |
+| Resilience | Polly 7.2.4 (retry) in student and teacher services; `RetryHandler` in the MVC app |
+| Logging | Serilog (console + daily rolling files) |
+| API docs | Swashbuckle 8.1.0 |
+| Frontend | Razor views, Tailwind CSS / Bootstrap / jQuery via CDN |
 
----
+All package versions are pinned (no floating `*` versions).
 
-## 📂 Project Directory Structure
+## 📝 Logging
+
+The gateway and all five services use **Serilog**: output goes to the console and to a daily file in each project's `logs/` folder (git-ignored): `gateway-log`, `authentication-`, `teacher-service-`, `log-` (course, student) and `API_Log-` (chat). The MVC website uses default .NET console logging.
+
+## 📂 Repository layout
 
 ```text
 Horizon/
-├── Horizon.MVC/             # Unified ASP.NET Core MVC Frontend
-├── gateway/
-│   └── GatewayAPI/          # Yarp API Gateway (Port 7000)
+├── Horizon.MVC/              website (Controllers, Services, Handlers, Views, Areas/Admin, Pages)
+├── gateway/GatewayAPI/       YARP gateway: Program.cs + routes in appsettings.json
 ├── services/
-│   ├── chat-service/        # Chat & messaging API (Port 7004)
-│   ├── course-service/      # Course management API (Port 7003)
-│   ├── identity-service/    # Identity & JWT authentication API (Port 7005)
-│   ├── student-service/     # Student profiles & progress API (Port 7002)
-│   └── teacher-service/     # Teacher workflow & analytics API (Port 7001)
-├── tests/
-│   ├── UnitTests/           # Unit tests
-│   ├── IntegrationTests/    # Integration tests
-│   └── UITests/             # Browser UI tests
-├── run-all.ps1              # Run script for all projects
-├── integration.slnx         # Solution definition
-└── database_setup_neon.md   # Setup guide for Neon PostgreSQL
+│   ├── identity-service/     login, users, JWT            (horizonDB)
+│   ├── teacher-service/      teacher workflow             (no DB)
+│   ├── course-service/       courses, enrolments          (horizonCourseDB)
+│   ├── student-service/      student features             (horizonStudentDB)
+│   └── chat-service/         chat                         (horizonChatDB)
+├── docs/horizon-guide.html   illustrated beginner guide
+├── database_setup_neon.md    PostgreSQL / Neon setup
+├── run-all.ps1               start everything
+├── integration.slnx          solution
+└── integration.slnLaunch     Visual Studio multi-start profile
 ```
 
----
+Each service follows the same layers: `Controllers → Validators → Services → Repositories → Data (DbContext)`, with `Middleware/` for error handling and `Migrations/` for the database schema.
 
-## 📄 References & Docs
-- Detailed frontend specifics: [Horizon.MVC README.md](file:///C:/Users/ravis/Desktop/Horizon/Horizon.MVC/README.md)
-- Neon database migration: [database_setup_neon.md](file:///C:/Users/ravis/Desktop/Horizon/database_setup_neon.md)
-- Legacy fixes report: [bug_fix](file:///C:/Users/ravis/Desktop/Horizon/bug_fix)
+## ⚠️ Known limitations
+
+- **Chat** has no authentication of its own: it relies on the gateway. Always reach it through `https://localhost:7000/chat/...`.
+- Only the Student service's `/api/profile` endpoints check a token; other student endpoints, and the student/course/auth gateway routes, are open.
+- The Course `progress` notification endpoint only logs the message.
+- Teacher-side chat integration is a placeholder (returns an empty list).
+- No automated tests yet.
+
+## 🙌 Credits
+
+Built as a hands-on project for learning API gateways and microservice communication with .NET.

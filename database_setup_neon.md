@@ -1,62 +1,66 @@
-# 🛢️ Database Migration & Setup Guide (Neon PostgreSQL)
+# 🛢️ Database Setup Guide (PostgreSQL / Neon)
 
-This document provides a step-by-step procedure to create a serverless PostgreSQL database on **Neon** and configure the `student-service` to connect to it.
+All Horizon data services use **PostgreSQL** through EF Core (`Npgsql.EntityFrameworkCore.PostgreSQL`), one database per service:
 
----
+| Service | Config key | Database |
+| :--- | :--- | :--- |
+| identity-service | `ConnectionStrings:DefaultConnection` | `horizonDB` |
+| course-service | `ConnectionStrings:DefaultConnection` | `horizonCourseDB` |
+| student-service | `ConnectionStrings:DefaultConnection` | `horizonStudentDB` |
+| chat-service | `ConnectionStrings:WebApplication1Context` | `horizonChatDB` |
 
-## 🚀 Step 1: Create a PostgreSQL Database on Neon
+teacher-service, the gateway and Horizon.MVC have no database.
 
-1. **Sign Up / Log In**:
-   - Navigate to [Neon Console](https://neon.tech/) and sign in or create a new account.
-
-2. **Create a Project**:
-   - Click **Create Project**.
-   - **Name**: e.g., `Horizon-SMS`
-   - **Database Version**: Keep default (PostgreSQL 16 or latest).
-   - **Region**: Choose the AWS region closest to you or your servers (e.g., `US East (N. Virginia)`).
-   - Click **Create Project**.
-
-3. **Retrieve the Connection String**:
-   - After creation, you will see a connection string screen.
-   - Choose **Connection string** in the dropdown.
-   - Select **ADO.NET** from the framework/language dropdown list, which gives a format suited for .NET:
-     ```text
-     Host=<your-neon-host>.neon.tech;Database=neondb;Username=alex;Password=<your-password>;SSL Mode=Require;Trust Server Certificate=True;
-     ```
-   - Copy this connection string.
+You can run PostgreSQL **locally** (Option A) or use a free serverless database on **Neon** (Option B).
 
 ---
 
-## 🛠️ Step 2: Configure the Connection String in the Project
+## 🐘 Option A: Local PostgreSQL
 
-1. Open the configuration file [services/student-service/appsettings.json](file:///C:/Users/ravis/Desktop/Horizon/services/student-service/appsettings.json).
-2. Find the `"ConnectionStrings"` section and update `"DefaultConnection"` with your Neon connection string:
-
-```json
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=ep-YOUR-HOST.us-east-2.aws.neon.tech;Database=neondb;Username=YOUR-USERNAME;Password=YOUR-PASSWORD;SSL Mode=Require;Trust Server Certificate=True;"
-  }
-```
-
----
-
-## 🔄 Step 3: Run the Application & Migrate Automatically
-
-1. Open a terminal in the root of the project.
-2. Build the project:
+1. Install PostgreSQL 16+ ([postgresql.org/download](https://www.postgresql.org/download/)) **or** run it in Docker:
    ```powershell
-   dotnet build
+   docker run -d --name horizon-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
    ```
-3. Run the student service:
-   ```powershell
-   dotnet run --project services/student-service/LearningPlatform.StudentService.csproj
+2. The committed `appsettings.json` files already point to it:
+   ```text
+   Host=localhost;Port=5432;Database=<service db>;Username=postgres;Password=postgres
    ```
-4. On startup, the service executes `context.Database.MigrateAsync()`, which connects to Neon and automatically creates all necessary schemas and tables (`Bookmarks`, `ProgressRecords`, `StudentProfiles`, `Enrollments`, `__EFMigrationsHistory`).
+   You don't need to create the databases yourself. Each service creates its database on first start.
 
 ---
 
-## 💡 Tech Details: How this was migrated in code
+## 🚀 Option B: Neon (serverless PostgreSQL)
 
-- **NuGet Package Added**: `Npgsql.EntityFrameworkCore.PostgreSQL` to [LearningPlatform.StudentService.csproj](file:///C:/Users/ravis/Desktop/Horizon/services/student-service/LearningPlatform.StudentService.csproj).
-- **Service Registration Changed**: Updated `builder.Services.AddDbContext<StudentDbContext>` in [Program.cs](file:///C:/Users/ravis/Desktop/Horizon/services/student-service/Program.cs#L100-L101) to use `.UseNpgsql(...)` instead of `.UseSqlServer(...)`.
-- **Migrations Cleaned**: Deleted legacy SQL Server migrations and generated fresh, PostgreSQL-compliant migrations.
+1. Sign in to the [Neon Console](https://neon.tech/) and click **Create Project** (e.g. `Horizon`), choosing the region closest to you.
+2. Open **Connection string**, select **ADO.NET**, and copy it:
+   ```text
+   Host=<your-neon-host>.neon.tech;Database=neondb;Username=<user>;Password=<password>;SSL Mode=Require
+   ```
+3. Use a separate database per service: change `Database=` to `horizonDB`, `horizonCourseDB`, `horizonStudentDB` and `horizonChatDB` (create them in the Neon console if your role can't create databases).
+4. Prefer overriding the connection string with **user-secrets** or **environment variables** instead of committing credentials:
+   ```powershell
+   cd services/course-service
+   dotnet user-secrets init
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Database=horizonCourseDB;Username=...;Password=...;SSL Mode=Require"
+   ```
+   (For chat-service, the key is `ConnectionStrings:WebApplication1Context`.)
+
+---
+
+## 🔄 Migrations
+
+- Each data service applies its EF Core migrations automatically on startup (`Database.Migrate()`), creating the database and all tables.
+- To change a model, add a new migration from the service folder:
+  ```powershell
+  dotnet tool install --global dotnet-ef   # once
+  cd services/student-service
+  dotnet ef migrations add <Name>
+  ```
+
+---
+
+## 💡 Tech details
+
+- **Provider:** `Npgsql.EntityFrameworkCore.PostgreSQL` 10.0.2 replaces `Microsoft.EntityFrameworkCore.SqlServer` in identity, course, student and chat. `Program.cs` calls `.UseNpgsql(...)`.
+- **Migrations:** the old SQL Server migrations were removed. Each service has one fresh PostgreSQL `InitialCreate` migration.
+- **DateTime handling:** each data service sets `AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true)`, so `DateTime` maps to `timestamp without time zone`, matching the old SQL Server `datetime2` behaviour.

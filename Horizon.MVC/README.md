@@ -16,17 +16,17 @@ The application implements the **Academic Premium** design system with:
 ```
 Horizon.MVC/
 ├── Controllers/
-│   ├── AccountController.cs      # Authentication & Authorization
+│   ├── AuthController.cs         # Login / register / logout via identity-service
 │   ├── CoursesController.cs      # Course management & browsing
-│   ├── StudentController.cs      # Student dashboard & features
-│   ├── TeacherController.cs      # Teacher dashboard & analytics
-│   ├── ChatController.cs         # Messaging functionality
+│   ├── DashboardController.cs    # Student dashboard (plus Profile, Bookmarks, Progress, ...)
+│   ├── TeacherController.cs      # Teacher dashboard & course workflow
+│   ├── ChatMvcController.cs      # Messaging functionality
 │   └── HomeController.cs         # Landing pages
 ├── Services/
-│   ├── CourseApiService.cs       # Course API integration
-│   ├── StudentApiService.cs      # Student API integration
-│   ├── TeacherApiService.cs      # Teacher API integration
-│   └── ChatApiService.cs         # Chat API integration
+│   ├── ApiService.cs             # Identity (auth) API integration
+│   ├── BaseApiService.cs         # Shared base for student-service API clients
+│   ├── *ApiService.cs            # Dashboard, Profile, Bookmark, Progress, ... clients
+│   └── TeacherApiService.cs      # Teacher API integration
 ├── Handlers/
 │   └── BearerTokenHandler.cs     # JWT token management
 ├── DTOs/
@@ -34,14 +34,13 @@ Horizon.MVC/
 │   ├── StudentDTOs.cs           # Student data transfer objects
 │   └── ChatDTOs.cs              # Chat data transfer objects
 ├── Views/
-│   ├── Account/                 # Login, logout views
+│   ├── Auth/                    # Login, register views
 │   ├── Courses/                 # Course listing, details, create, edit
 │   ├── Student/                 # Dashboard, profile, bookmarks, discovery
 │   ├── Teacher/                 # Dashboard, analytics
 │   ├── Chat/                    # Messaging interface
 │   └── Home/                    # Landing page
 └── wwwroot/
-    ├── css/site.css             # Themed CSS with design system
     └── js/site.js               # Theme toggle functionality
 ```
 
@@ -82,14 +81,14 @@ Horizon.MVC/
 
 ### Gateway Communication
 All API calls route through the API Gateway at `https://localhost:7000`:
-- `/courses/*` → Course Service (port 5004)
-- `/students/*` → Student Service (port 5003)
-- `/teachers/*` → Teacher Service (port 5001)
-- `/chat/*` → Chat Service (port 5005)
-- `/auth/*` → Identity Service (port 5002)
+- `/courses/*` → Course Service (port 7003)
+- `/students/*` → Student Service (port 7002)
+- `/teachers/*` → Teacher Service (port 7001)
+- `/chat/*` → Chat Service (port 7004)
+- `/auth/*` → Identity Service (port 7005)
 
 ### HTTP Client Configuration
-- Named HttpClient: "Gateway"
+- Named HttpClients: `ApiService` (auth), `StudentAPI`, `LearningApi` (courses), `TeacherAPI`, `ChatApi`, each based on `GatewayUrl`
 - Automatic JWT token attachment via BearerTokenHandler
 - 30-second timeout
 - Retry logic for failed requests
@@ -100,18 +99,8 @@ All API calls route through the API Gateway at `https://localhost:7000`:
 ```json
 {
   "GatewayUrl": "https://localhost:7000",
-  "ApiUrls": {
-    "Gateway": "https://localhost:7000",
-    "Teacher": "https://localhost:5001",
-    "Student": "https://localhost:5003",
-    "Course": "https://localhost:5004",
-    "Chat": "https://localhost:5005",
-    "Auth": "https://localhost:5002"
-  },
-  "JwtSettings": {
-    "Key": "SuperSecretKeyForLearningPlatform123456",
-    "Issuer": "HorizonPlatform",
-    "Audience": "HorizonUsers"
+  "ExternalUrls": {
+    "CourseFrontend": "https://localhost:7006"
   }
 }
 ```
@@ -119,15 +108,15 @@ All API calls route through the API Gateway at `https://localhost:7000`:
 ## Running the Application
 
 ### Prerequisites
-- .NET 8.0 SDK
+- .NET 10 SDK
 - All backend services running
 - API Gateway running on port 7000
 
 ### Steps
 1. Navigate to Horizon.MVC directory
 2. Restore packages: `dotnet restore`
-3. Run the application: `dotnet run`
-4. Access at: `https://localhost:5000` (or configured port)
+3. Run the application: `dotnet run --launch-profile https`
+4. Access at: `https://localhost:7006`
 
 ## User Flows
 
@@ -204,18 +193,3 @@ All API calls route through the API Gateway at `https://localhost:7000`:
 2. **API Connection Failed**: Verify Gateway is running
 3. **Theme not switching**: Clear browser cache
 4. **Session expired**: Re-login to refresh token
-
-## Migration from Old MVCs
-This unified MVC replaces:
-- Chat.MVC → ChatController + ChatApiService
-- LearningPlatform.Mvc → CoursesController + AccountController
-- Student.MVC → StudentController + StudentApiService
-- TeacherDashboardMvc → TeacherController + TeacherApiService
-- LearningPlatformFrontend → Consolidated into above
-
-All functionality has been preserved and enhanced with:
-- Unified authentication
-- Consistent design system
-- Centralized API communication
-- Better code organization
-- Reduced duplication

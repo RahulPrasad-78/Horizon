@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Horizon – How the whole project works (beginner guide)</title>
+<style>
+  :root {
+    --bg:#f6faf8; --card:#ffffff; --ink:#14201a; --muted:#52645b; --line:#d6e2dc;
+    --brand:#0b6b49; --brand-soft:#e3f3ec; --accent:#b45309; --accent-soft:#fdf0dc;
+    --code-bg:#0f1b16; --code-ink:#d8f3e6; --info:#1d4ed8; --info-soft:#e6eefc;
+    --warn:#b91c1c; --warn-soft:#fde8e8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0e1612; --card:#16211b; --ink:#e4efe9; --muted:#9db3a8; --line:#2a3b33;
+      --brand:#58d19c; --brand-soft:#17302a; --accent:#f0b35c; --accent-soft:#33291a;
+      --code-bg:#09100d; --code-ink:#d8f3e6; --info:#7ea6ff; --info-soft:#18233f;
+      --warn:#ff8f8f; --warn-soft:#3a1c1c;
+    }
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header.hero { background:linear-gradient(135deg,#064e3b,#0b6b49 55%,#16a06c); color:#fff; padding:56px 24px 48px; }
+  header.hero .wrap { max-width:1000px; margin:auto; }
+  header.hero h1 { margin:0 0 8px; font-size:2.3rem; letter-spacing:-.5px; }
+  header.hero p { margin:6px 0; max-width:720px; font-size:1.08rem; opacity:.95; }
+  .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:240px 1fr; gap:36px; padding:28px 24px 80px; }
+  nav.toc { position:sticky; top:16px; align-self:start; font-size:.92rem; max-height:calc(100vh - 32px); overflow:auto; }
+  nav.toc strong { display:block; margin-bottom:8px; color:var(--muted); text-transform:uppercase; font-size:.75rem; letter-spacing:.08em; }
+  nav.toc a { display:block; padding:5px 10px; border-radius:8px; color:var(--ink); text-decoration:none; }
+  nav.toc a:hover { background:var(--brand-soft); }
+  main { min-width:0; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px 30px; margin-bottom:22px; }
+  h2 { margin:0 0 6px; font-size:1.55rem; letter-spacing:-.3px; }
+  h2 .num { display:inline-block; background:var(--brand); color:#fff; width:34px; height:34px; line-height:34px; text-align:center; border-radius:50%; font-size:1rem; margin-right:10px; }
+  h3 { margin:26px 0 6px; font-size:1.1rem; color:var(--brand); }
+  p.lead { color:var(--muted); margin-top:2px; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:.93rem; display:block; overflow-x:auto; }
+  th,td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--brand-soft); color:var(--ink); font-weight:600; white-space:nowrap; }
+  code { background:var(--brand-soft); padding:1px 6px; border-radius:5px; font:0.88em ui-monospace,Consolas,monospace; }
+  pre { background:var(--code-bg); color:var(--code-ink); padding:16px 18px; border-radius:12px; overflow-x:auto; font:0.86rem/1.55 ui-monospace,Consolas,monospace; }
+  pre code { background:none; padding:0; color:inherit; }
+  .box { border-left:5px solid var(--info); background:var(--info-soft); padding:12px 16px; border-radius:0 10px 10px 0; margin:14px 0; }
+  .box.tip { border-color:var(--brand); background:var(--brand-soft); }
+  .box.warn { border-color:var(--warn); background:var(--warn-soft); }
+  .box.analogy { border-color:var(--accent); background:var(--accent-soft); }
+  .box b.t { display:block; margin-bottom:2px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:14px 0; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--bg); }
+  .card h4 { margin:0 0 4px; }
+  .pill { display:inline-block; font-size:.75rem; padding:1px 9px; border-radius:99px; background:var(--brand); color:#fff; margin-left:6px; vertical-align:middle; }
+  .pill.gray { background:var(--muted); }
+  ol.steps { counter-reset:s; list-style:none; padding:0; }
+  ol.steps li { counter-increment:s; position:relative; padding:10px 14px 10px 52px; margin:10px 0; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
+  ol.steps li::before { content:counter(s); position:absolute; left:14px; top:10px; width:28px; height:28px; line-height:28px; text-align:center; border-radius:50%; background:var(--brand); color:#fff; font-weight:700; font-size:.9rem; }
+  svg { max-width:100%; height:auto; display:block; margin:14px auto; }
+  svg text { font-family:system-ui,sans-serif; }
+  .svg-ink { fill:var(--ink); } .svg-muted { fill:var(--muted); }
+  details { border:1px solid var(--line); border-radius:12px; padding:10px 16px; margin:10px 0; background:var(--bg); }
+  summary { cursor:pointer; font-weight:600; }
+  footer { text-align:center; color:var(--muted); padding:24px; font-size:.9rem; }
+  @media (max-width:900px) { .layout { grid-template-columns:1fr; } nav.toc { position:static; max-height:none; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>🌅 Horizon – how the whole project works</h1>
+    <p>A step-by-step guide for beginners. It explains what every part does, how a click in the browser travels through the <b>gateway</b> to the backend services, and how they talk to each other and to the database.</p>
+    <p style="opacity:.8;font-size:.95rem">Built with .NET 10 · YARP gateway · 5 microservices · MVC website · PostgreSQL (Neon) · Serilog logging</p>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc">
+  <strong>Contents</strong>
+  <a href="#idea">1. The big idea</a>
+  <a href="#map">2. The map</a>
+  <a href="#words">3. Words you will see</a>
+  <a href="#parts">4. Meet the 7 parts</a>
+  <a href="#journey">5. Follow one request</a>
+  <a href="#gateway">6. The gateway</a>
+  <a href="#auth">7. Login &amp; security</a>
+  <a href="#s2s">8. Services talking to services</a>
+  <a href="#inside">9. Inside one service</a>
+  <a href="#db">10. Databases</a>
+  <a href="#config">11. Where settings come from</a>
+  <a href="#web">12. The website (MVC)</a>
+  <a href="#logs">13. Logging</a>
+  <a href="#run">14. Run it yourself</a>
+  <a href="#try">15. Try the API</a>
+  <a href="#limits">16. Known limits</a>
+  <a href="#folders">17. Folder map</a>
+</nav>
+
+<main>
+
+<!-- 1 -->
+<section id="idea">
+  <h2><span class="num">1</span>The big idea</h2>
+  <p class="lead">One website, many small programs working together.</p>
+  <p>Horizon is an online learning platform. Students browse and enrol in courses, teachers create courses, and students and teachers can chat. Instead of building this as <b>one big program</b>, it is split into <b>small, independent programs</b> called <b>microservices</b>. Each one does one job and owns its own database.</p>
+
+  <div class="box analogy"><b class="t">🏨 Think of a hotel</b>
+    The <b>website</b> is the guest. The <b>gateway</b> is the reception desk: every request goes there first, and reception checks your key card and sends you to the right department. The <b>services</b> are the departments (housekeeping, restaurant, spa…). Each department keeps its own paperwork (its <b>database</b>). Departments can also phone each other when they need something.
+  </div>
+
+  <p>The main point of the project is the <b>gateway</b>: the browser <i>never</i> talks to a service directly. Everything goes through one door (<code>https://localhost:7000</code>), which makes it easy to add security, limits and logging in one place.</p>
+</section>
+
+<!-- 2 -->
+<section id="map">
+  <h2><span class="num">2</span>The map</h2>
+  <p class="lead">Every box below is a separate program that runs on your computer.</p>
+
+  <svg viewBox="0 0 960 520" role="img" aria-label="Architecture diagram">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6b7f75"/></marker>
+    </defs>
+    <!-- browser -->
+    <rect x="20" y="215" width="130" height="70" rx="12" fill="#e8f1ff" stroke="#6b8fd6"/>
+    <text x="85" y="245" text-anchor="middle" font-size="15" font-weight="700" fill="#1d3a8a">Browser</text>
+    <text x="85" y="266" text-anchor="middle" font-size="12" fill="#1d3a8a">you</text>
+    <!-- mvc -->
+    <rect x="190" y="205" width="150" height="90" rx="12" fill="#fff4de" stroke="#d99a2b"/>
+    <text x="265" y="235" text-anchor="middle" font-size="15" font-weight="700" fill="#7a4b00">Horizon.MVC</text>
+    <text x="265" y="256" text-anchor="middle" font-size="12" fill="#7a4b00">website · port 7006</text>
+    <text x="265" y="275" text-anchor="middle" font-size="11" fill="#7a4b00">pages + session cookie</text>
+    <!-- gateway -->
+    <rect x="380" y="195" width="160" height="110" rx="12" fill="#0b6b49" stroke="#064e3b"/>
+    <text x="460" y="232" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">API Gateway</text>
+    <text x="460" y="254" text-anchor="middle" font-size="12" fill="#d8f3e6">YARP · port 7000</text>
+    <text x="460" y="273" text-anchor="middle" font-size="11" fill="#d8f3e6">routes · JWT check</text>
+    <text x="460" y="290" text-anchor="middle" font-size="11" fill="#d8f3e6">rate limit · logs</text>
+    <!-- services -->
+    <g font-size="13" font-weight="700">
+      <rect x="610" y="20"  width="170" height="62" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="695" y="46"  text-anchor="middle" fill="#064e3b">Identity</text><text x="695" y="66" text-anchor="middle" font-size="11" font-weight="400" fill="#064e3b">7005 · login, users</text>
+      <rect x="610" y="115" width="170" height="62" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="695" y="141" text-anchor="middle" fill="#064e3b">Teacher</text><text x="695" y="161" text-anchor="middle" font-size="11" font-weight="400" fill="#064e3b">7001 · course workflow</text>
+      <rect x="610" y="210" width="170" height="62" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="695" y="236" text-anchor="middle" fill="#064e3b">Course</text><text x="695" y="256" text-anchor="middle" font-size="11" font-weight="400" fill="#064e3b">7003 · courses, enrolments</text>
+      <rect x="610" y="305" width="170" height="62" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="695" y="331" text-anchor="middle" fill="#064e3b">Student</text><text x="695" y="351" text-anchor="middle" font-size="11" font-weight="400" fill="#064e3b">7002 · profile, bookmarks…</text>
+      <rect x="610" y="400" width="170" height="62" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="695" y="426" text-anchor="middle" fill="#064e3b">Chat</text><text x="695" y="446" text-anchor="middle" font-size="11" font-weight="400" fill="#064e3b">7004 · messages</text>
+    </g>
+    <!-- databases -->
+    <g font-size="12" fill="#3b2a6b">
+      <ellipse cx="880" cy="51"  rx="62" ry="24" fill="#efe9ff" stroke="#7c5cd6"/><text x="880" y="55"  text-anchor="middle">horizonDB</text>
+      <ellipse cx="880" cy="241" rx="62" ry="24" fill="#efe9ff" stroke="#7c5cd6"/><text x="880" y="245" text-anchor="middle">horizonCourseDB</text>
+      <ellipse cx="880" cy="336" rx="62" ry="24" fill="#efe9ff" stroke="#7c5cd6"/><text x="880" y="340" text-anchor="middle">horizonStudentDB</text>
+      <ellipse cx="880" cy="431" rx="62" ry="24" fill="#efe9ff" stroke="#7c5cd6"/><text x="880" y="435" text-anchor="middle">horizonChatDB</text>
+    </g>
+    <text x="880" y="500" text-anchor="middle" font-size="12" class="svg-muted">PostgreSQL on Neon (cloud)</text>
+    <text x="695" y="500" text-anchor="middle" font-size="12" class="svg-muted">(Teacher has no database)</text>
+    <!-- arrows -->
+    <g stroke="#6b7f75" stroke-width="2" fill="none" marker-end="url(#ar)">
+      <path d="M150 250 H188"/><path d="M340 250 H378"/>
+      <path d="M540 230 C575 230 575 51 608 51"/>
+      <path d="M540 245 C575 245 575 146 608 146"/>
+      <path d="M540 250 H608"/>
+      <path d="M540 262 C575 262 575 336 608 336"/>
+      <path d="M540 275 C575 275 575 431 608 431"/>
+      <path d="M782 51 H816"/><path d="M782 241 H816"/><path d="M782 336 H816"/><path d="M782 431 H816"/>
+    </g>
+    <!-- s2s dashed -->
+    <g stroke="#b45309" stroke-width="2" stroke-dasharray="6 5" fill="none" marker-end="url(#ar)">
+      <path d="M780 330 C800 300 800 280 782 262"/>
+      <path d="M780 146 C805 170 805 215 782 232"/>
+      <path d="M610 70 C585 95 585 290 608 322" />
+    </g>
+    <text x="30" y="440" font-size="12" class="svg-ink">━ solid line: request that goes through the gateway</text>
+    <text x="30" y="462" font-size="12" fill="#b45309">┅ dashed line: service calls another service directly</text>
+  </svg>
+  <p>Dashed lines: <b>Teacher → Course</b> (create/publish courses), <b>Student → Course</b> (look up courses, tell it about enrolments), <b>Identity → Student</b> (create a profile for every new student). The Student service also calls <b>Chat</b>.</p>
+</section>
+
+<!-- 3 -->
+<section id="words">
+  <h2><span class="num">3</span>Words you will see</h2>
+  <table>
+    <tr><th>Word</th><th>Plain meaning</th></tr>
+    <tr><td><b>Microservice</b></td><td>A small program that does one job, runs on its own, and has its own database.</td></tr>
+    <tr><td><b>API</b></td><td>A list of URLs a program offers so other programs can use it, e.g. <code>GET /api/CoursesApi</code> returns courses as data.</td></tr>
+    <tr><td><b>HTTP request / response</b></td><td>A message sent to a URL, and the answer. Methods: <code>GET</code> read, <code>POST</code> create, <code>PUT</code> update, <code>DELETE</code> remove.</td></tr>
+    <tr><td><b>Status code</b></td><td><code>200</code> OK · <code>201</code> created · <code>401</code> not logged in · <code>403</code> not allowed · <code>404</code> not found · <code>429</code> too many requests · <code>502</code> the service behind the gateway is down.</td></tr>
+    <tr><td><b>Gateway / reverse proxy</b></td><td>A single front door that forwards requests to the right service. Here it is <b>YARP</b>, Microsoft’s reverse proxy library.</td></tr>
+    <tr><td><b>JWT (token)</b></td><td>A signed text “pass” the server gives you at login. You show it on every later request instead of sending your password again.</td></tr>
+    <tr><td><b>Role</b></td><td>What kind of user you are: <code>Student</code>, <code>Teacher</code> or <code>Admin</code>. Some actions only work for some roles.</td></tr>
+    <tr><td><b>Controller</b></td><td>The class that receives a request for a URL and decides what to do.</td></tr>
+    <tr><td><b>Repository</b></td><td>The class that reads and writes the database.</td></tr>
+    <tr><td><b>EF Core / migration</b></td><td>EF Core turns C# classes into database tables. A <b>migration</b> is a saved recipe that creates or changes those tables.</td></tr>
+    <tr><td><b>Middleware</b></td><td>A step every request passes through before reaching a controller (logging, error handling, login check…).</td></tr>
+    <tr><td><b>Serilog</b></td><td>The logging library: it writes what happened to the console and to daily log files.</td></tr>
+    <tr><td><b>Connection string</b></td><td>The text that says where a database is and how to log in to it.</td></tr>
+  </table>
+</section>
+
+<!-- 4 -->
+<section id="parts">
+  <h2><span class="num">4</span>Meet the 7 parts</h2>
+  <p class="lead">Each part is a separate project in the repository and starts as its own process.</p>
+  <table>
+    <tr><th>Part</th><th>Port</th><th>What it does</th><th>Database</th></tr>
+    <tr><td><b>Horizon.MVC</b><br><code>Horizon.MVC/</code></td><td>7006</td><td>The website you see: pages for students, teachers and admins. It does <b>no</b> data work itself; it asks the gateway.</td><td>none (uses a cookie + session)</td></tr>
+    <tr><td><b>Gateway</b><br><code>gateway/GatewayAPI/</code></td><td>7000</td><td>Front door. Forwards <code>/auth</code>, <code>/students</code>, <code>/courses</code>, <code>/teachers</code>, <code>/chat</code> to the right service, checks tokens on protected routes, limits request rates.</td><td>none</td></tr>
+    <tr><td><b>Identity</b><br><code>services/identity-service/</code></td><td>7005</td><td>Register, login, issue JWT tokens, approve or reject teachers, list users.</td><td><code>horizonDB</code> (ASP.NET Identity tables)</td></tr>
+    <tr><td><b>Teacher</b><br><code>services/teacher-service/</code></td><td>7001</td><td>Teacher dashboard and course workflow. It stores nothing itself: it calls the Course service.</td><td>none</td></tr>
+    <tr><td><b>Course</b><br><code>services/course-service/</code></td><td>7003</td><td>The course catalogue: courses, videos, comments, enrolments.</td><td><code>horizonCourseDB</code></td></tr>
+    <tr><td><b>Student</b><br><code>services/student-service/</code></td><td>7002</td><td>Student profile, dashboard, bookmarks, progress, recommendations, enrolling.</td><td><code>horizonStudentDB</code></td></tr>
+    <tr><td><b>Chat</b><br><code>services/chat-service/</code></td><td>7004</td><td>Chat sessions between a student and a teacher, and their messages.</td><td><code>horizonChatDB</code></td></tr>
+  </table>
+</section>
+
+<!-- 5 -->
+<section id="journey">
+  <h2><span class="num">5</span>Follow one request: “a student enrols in a course”</h2>
+  <p class="lead">This single click touches almost every part of the system.</p>
+
+  <svg viewBox="0 0 960 470" role="img" aria-label="Sequence diagram of an enrolment">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0b6b49"/></marker></defs>
+    <g font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="10"  y="10" width="120" height="34" rx="8" fill="#e8f1ff" stroke="#6b8fd6"/><text x="70"  y="32" fill="#1d3a8a">Browser</text>
+      <rect x="170" y="10" width="120" height="34" rx="8" fill="#fff4de" stroke="#d99a2b"/><text x="230" y="32" fill="#7a4b00">MVC site</text>
+      <rect x="350" y="10" width="120" height="34" rx="8" fill="#0b6b49" stroke="#064e3b"/><text x="410" y="32" fill="#fff">Gateway</text>
+      <rect x="530" y="10" width="120" height="34" rx="8" fill="#e3f3ec" stroke="#0b6b49"/><text x="590" y="32" fill="#064e3b">Student svc</text>
+      <rect x="700" y="10" width="120" height="34" rx="8" fill="#e3f3ec" stroke="#0b6b49"/><text x="760" y="32" fill="#064e3b">Course svc</text>
+      <rect x="850" y="10" width="100" height="34" rx="8" fill="#efe9ff" stroke="#7c5cd6"/><text x="900" y="32" fill="#3b2a6b">Neon DB</text>
+    </g>
+    <g stroke="#9bb0a6" stroke-dasharray="4 4"><line x1="70" y1="44" x2="70" y2="455"/><line x1="230" y1="44" x2="230" y2="455"/><line x1="410" y1="44" x2="410" y2="455"/><line x1="590" y1="44" x2="590" y2="455"/><line x1="760" y1="44" x2="760" y2="455"/><line x1="900" y1="44" x2="900" y2="455"/></g>
+    <g stroke="#0b6b49" stroke-width="2" fill="none" marker-end="url(#a2)">
+      <line x1="70"  y1="85"  x2="228" y2="85"/>
+      <line x1="230" y1="125" x2="408" y2="125"/>
+      <line x1="410" y1="165" x2="588" y2="165"/>
+      <line x1="590" y1="205" x2="758" y2="205"/>
+      <line x1="590" y1="250" x2="898" y2="250"/>
+      <line x1="590" y1="295" x2="758" y2="295"/>
+      <line x1="760" y1="320" x2="898" y2="320"/>
+    </g>
+    <g stroke="#b45309" stroke-width="2" stroke-dasharray="5 4" fill="none" marker-end="url(#a2)">
+      <line x1="588" y1="370" x2="412" y2="370"/>
+      <line x1="408" y1="400" x2="232" y2="400"/>
+      <line x1="228" y1="430" x2="72" y2="430"/>
+    </g>
+    <g font-size="12" class="svg-ink">
+      <text x="75"  y="76">① click “Enrol”</text>
+      <text x="236" y="116">② POST /students/api/enrollment/1 + token</text>
+      <text x="416" y="156">③ checks token, strips “/students”</text>
+      <text x="596" y="196">④ GET api/coursesapi/1 (does course exist?)</text>
+      <text x="596" y="241">⑤ save Enrollment in horizonStudentDB</text>
+      <text x="596" y="286">⑥ POST api/coursesapi/enroll + X-Service-Key</text>
+      <text x="766" y="311">⑦ save in horizonCourseDB</text>
+      <text x="420" y="361" fill="#b45309">⑧ 201 “Enrolled successfully”</text>
+      <text x="240" y="391" fill="#b45309">⑨ passes it back</text>
+      <text x="80"  y="421" fill="#b45309">⑩ page shows “Enrolled”</text>
+    </g>
+  </svg>
+
+  <ol class="steps">
+    <li><b>Browser → MVC.</b> You press <b>Enrol</b>. The browser sends your session cookie to the website on port 7006.</li>
+    <li><b>MVC → Gateway.</b> The MVC controller uses a pre-configured <code>HttpClient</code> named <code>StudentAPI</code> whose base address is <code>https://localhost:7000/students/</code>. A helper called <code>BearerTokenHandler</code> reads your JWT from the session and adds the header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+    <li><b>Gateway.</b> It matches the path <code>/students/**</code>, removes the <code>/students</code> prefix, applies the rate limiter, and forwards <code>POST /api/enrollment/1</code> to <code>https://localhost:7002</code>.</li>
+    <li><b>Student service.</b> It validates the token itself, takes your user id from it, then asks the Course service whether course 1 exists (<code>GET api/coursesapi/1</code>).</li>
+    <li><b>Student service → database.</b> It stores the enrolment in its own database, <code>horizonStudentDB</code>.</li>
+    <li><b>Student → Course.</b> It tells the Course service about the enrolment with <code>POST api/coursesapi/enroll</code>. This call is not made by a person, so it proves itself with the shared secret header <code>X-Service-Key</code>. The Course service saves it in <code>horizonCourseDB</code>.</li>
+    <li><b>The answer travels back</b> the same way: Student → Gateway → MVC → Browser, and the page updates.</li>
+  </ol>
+  <div class="box tip"><b class="t">Why save it twice?</b> Each service owns its data. The Student service needs “which courses am I enrolled in?”, while the Course service needs “how many students joined this course?” (the teacher dashboard reads that count). Keeping a copy in each service means one can keep working even if the other is slow.</div>
+</section>
+
+<!-- 6 -->
+<section id="gateway">
+  <h2><span class="num">6</span>The gateway in detail</h2>
+  <p class="lead">Code: <code>gateway/GatewayAPI/Program.cs</code> and <code>appsettings.json</code></p>
+
+  <h3>Routes: which URL goes where</h3>
+  <table>
+    <tr><th>You call (via gateway)</th><th>Gateway forwards to</th><th>Becomes</th><th>Token needed at gateway?</th><th>Rate limit</th></tr>
+    <tr><td><code>/auth/**</code></td><td>Identity <code>:7005</code></td><td><code>/api/Auth/login</code></td><td>no</td><td>none</td></tr>
+    <tr><td><code>/students/**</code></td><td>Student <code>:7002</code></td><td><code>/api/profile</code></td><td>no (service checks)</td><td>100 / 10 s</td></tr>
+    <tr><td><code>/courses/**</code></td><td>Course <code>:7003</code></td><td><code>/api/CoursesApi</code></td><td>no (service checks)</td><td>100 / 10 s</td></tr>
+    <tr><td><code>/teachers/**</code></td><td>Teacher <code>:7001</code></td><td><code>/api/teacher/courses</code></td><td><b>yes</b></td><td>100 / 10 s</td></tr>
+    <tr><td><code>/chat/**</code></td><td>Chat <code>:7004</code></td><td><code>/api/chat/send-message</code></td><td><b>yes</b></td><td>100 / 10 s</td></tr>
+  </table>
+  <p>Example: calling <code>https://localhost:7000/courses/api/CoursesApi</code> reaches the Course service as <code>GET /api/CoursesApi</code>. The first path segment is the “address label”; the gateway peels it off.</p>
+
+  <h3>One route, as configured</h3>
+<pre><code>"teacherRoute": {
+  "ClusterId": "teacherCluster",
+  "Match": { "Path": "/teachers/{**catch-all}" },
+  "AuthorizationPolicy": "default",     // must carry a valid JWT
+  "RateLimiterPolicy": "fixed",         // 100 requests per 10 seconds
+  "Transforms": [ { "PathRemovePrefix": "/teachers" } ]
+},
+"teacherCluster": { "Destinations": { "d1": { "Address": "https://localhost:7001/" } } }</code></pre>
+
+  <h3>What happens to every request, in order</h3>
+  <ol class="steps">
+    <li><b>Serilog request logging</b>: one log line per request.</li>
+    <li><b>Authentication</b>: if an <code>Authorization: Bearer …</code> header exists, the gateway checks the token’s signature, issuer, audience and expiry.</li>
+    <li><b>Authorization</b>: routes with the <code>default</code> policy (teachers, chat) reject you with <b>401</b> if there is no valid token.</li>
+    <li><b>Rate limiter</b>: more than 100 requests in 10 seconds gets <b>429 Too Many Requests</b> (up to 10 extra requests wait in a queue).</li>
+    <li><b>Reverse proxy</b>: YARP forwards the request, and sends the answer back. If the target service is off you get <b>502</b>.</li>
+  </ol>
+  <div class="box">The gateway passes your <code>Authorization</code> header through unchanged, so each service can check the token again. That way a service stays safe even if somebody calls it directly, bypassing the gateway.</div>
+</section>
+
+<!-- 7 -->
+<section id="auth">
+  <h2><span class="num">7</span>Login &amp; security</h2>
+  <p class="lead">Code: <code>services/identity-service/</code></p>
+
+  <h3>Register and login flow</h3>
+  <ol class="steps">
+    <li><b>Register</b> – <code>POST /auth/api/Auth/register</code> with email, password and role (<code>Student</code> or <code>Teacher</code>). Identity creates the user in <code>horizonDB</code> with a hashed password.</li>
+    <li><b>Students</b> can log in at once, and Identity also calls the Student service (<code>POST api/profile/seed/{id}</code> with <code>X-Service-Key</code>) so the new student gets a profile automatically.</li>
+    <li><b>Teachers</b> have to wait: logging in returns <b>401 “Pending approval”</b> until an <b>Admin</b> approves them on the admin page (<code>approve-teacher/{id}</code>).</li>
+    <li><b>Login</b> – <code>POST /auth/api/Auth/login</code> returns a <b>JWT</b>, valid for 60 minutes. It contains your user id, email, roles, issuer <code>KrishTanwar</code>, audience <code>Students/Teachers</code> and an expiry time, all signed with a secret key.</li>
+    <li>The MVC website keeps the token in the session and in an HTTP-only cookie, and signs you into the site with a normal cookie for 2 hours.</li>
+  </ol>
+
+  <h3>Who can do what</h3>
+  <table>
+    <tr><th>Role</th><th>Can</th></tr>
+    <tr><td>Anyone</td><td>See the public course list and course details; register; log in.</td></tr>
+    <tr><td><b>Student</b></td><td>Profile, dashboard, bookmarks, progress, enrol, chat.</td></tr>
+    <tr><td><b>Teacher</b> (approved)</td><td>Create, edit and publish courses; see enrolments and the dashboard.</td></tr>
+    <tr><td><b>Admin</b></td><td>Approve or reject teachers, list users. Seeded automatically on first start from <code>Admin:Email</code> / <code>Admin:Password</code>.</td></tr>
+  </table>
+
+  <h3>Two kinds of “proof” in this project</h3>
+  <table>
+    <tr><th>Used when</th><th>Proof</th></tr>
+    <tr><td>A <b>person</b> calls an API</td><td>JWT token in the <code>Authorization</code> header</td></tr>
+    <tr><td>A <b>service</b> calls another service on its own (no user involved)</td><td>Shared secret in the <code>X-Service-Key</code> header, checked against <code>ServiceAuth:Key</code> (used for “create student profile” and “enrolment notification”)</td></tr>
+  </table>
+</section>
+
+<!-- 8 -->
+<section id="s2s">
+  <h2><span class="num">8</span>Services talking to services</h2>
+  <p class="lead">These calls go directly (not through the gateway) using .NET’s <code>HttpClient</code>.</p>
+  <table>
+    <tr><th>From</th><th>To</th><th>Endpoint</th><th>Why</th><th>Safety net</th></tr>
+    <tr><td>Identity</td><td>Student</td><td><code>POST api/profile/seed/{id}</code></td><td>Create a profile for a new student</td><td><code>X-Service-Key</code>; failure is logged, registration still works</td></tr>
+    <tr><td>Student</td><td>Course</td><td><code>GET api/coursesapi/{id}</code>, <code>/search</code>, list</td><td>Discovery &amp; check a course exists</td><td>Polly: 1 retry, 3 s timeout</td></tr>
+    <tr><td>Student</td><td>Course</td><td><code>POST api/coursesapi/enroll</code></td><td>Tell Course about an enrolment</td><td><code>X-Service-Key</code></td></tr>
+    <tr><td>Student</td><td>Chat</td><td><code>request-session</code>, <code>sessions</code>, <code>history/{id}</code>, <code>send-message</code></td><td>Student’s chat screens</td><td>Polly retry</td></tr>
+    <tr><td>Teacher</td><td>Course</td><td><code>api/CoursesApi/…</code>, <code>api/EnrollmentsApi/Course/{id}</code></td><td>All teacher course actions and enrolment lists</td><td>Forwards the teacher’s JWT; Polly: 2 retries</td></tr>
+  </table>
+  <div class="box"><b class="t">What is Polly?</b> A library that automatically retries a failed call a couple of times. If the other service still does not answer, the caller logs a warning and returns an empty result instead of crashing.</div>
+</section>
+
+<!-- 9 -->
+<section id="inside">
+  <h2><span class="num">9</span>Inside one service</h2>
+  <p class="lead">Every service is built in the same layers, so once you understand one you understand all.</p>
+
+  <svg viewBox="0 0 960 150" role="img" aria-label="Layers inside a service">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7f75"/></marker></defs>
+    <g font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="5"   y="40" width="135" height="60" rx="10" fill="#fff4de" stroke="#d99a2b"/><text x="72"  y="68" fill="#7a4b00">Middleware</text><text x="72"  y="86" font-size="10" font-weight="400" fill="#7a4b00">logging · errors · auth</text>
+      <rect x="170" y="40" width="135" height="60" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="237" y="68" fill="#064e3b">Controller</text><text x="237" y="86" font-size="10" font-weight="400" fill="#064e3b">URL → method</text>
+      <rect x="335" y="40" width="135" height="60" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="402" y="68" fill="#064e3b">Validator</text><text x="402" y="86" font-size="10" font-weight="400" fill="#064e3b">FluentValidation</text>
+      <rect x="500" y="40" width="135" height="60" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="567" y="68" fill="#064e3b">Service</text><text x="567" y="86" font-size="10" font-weight="400" fill="#064e3b">business rules</text>
+      <rect x="665" y="40" width="135" height="60" rx="10" fill="#e3f3ec" stroke="#0b6b49"/><text x="732" y="68" fill="#064e3b">Repository</text><text x="732" y="86" font-size="10" font-weight="400" fill="#064e3b">EF Core queries</text>
+      <rect x="830" y="40" width="120" height="60" rx="10" fill="#efe9ff" stroke="#7c5cd6"/><text x="890" y="68" fill="#3b2a6b">Database</text><text x="890" y="86" font-size="10" font-weight="400" fill="#3b2a6b">PostgreSQL</text>
+    </g>
+    <g stroke="#6b7f75" stroke-width="2" marker-end="url(#a3)"><line x1="140" y1="70" x2="168" y2="70"/><line x1="305" y1="70" x2="333" y2="70"/><line x1="470" y1="70" x2="498" y2="70"/><line x1="635" y1="70" x2="663" y2="70"/><line x1="800" y1="70" x2="828" y2="70"/></g>
+    <text x="480" y="135" text-anchor="middle" font-size="12" class="svg-muted">AutoMapper converts between database models and the DTOs (the shapes sent over HTTP)</text>
+  </svg>
+
+  <table>
+    <tr><th>Folder</th><th>What lives there</th></tr>
+    <tr><td><code>Controllers/</code></td><td>The URLs (endpoints) the service offers.</td></tr>
+    <tr><td><code>DTOs/</code></td><td>“Data Transfer Objects”: the exact shape of the JSON going in and out.</td></tr>
+    <tr><td><code>Validators/</code></td><td>Rules such as “title must not be empty”. They run automatically before the controller code.</td></tr>
+    <tr><td><code>Services/</code></td><td>The real logic (e.g. “can’t enrol twice”).</td></tr>
+    <tr><td><code>Repositories/</code></td><td>Database reads and writes.</td></tr>
+    <tr><td><code>Data/</code></td><td>The <code>DbContext</code>: the list of tables and their rules.</td></tr>
+    <tr><td><code>Models/</code></td><td>The C# classes that become database tables.</td></tr>
+    <tr><td><code>Migrations/</code></td><td>Auto-generated recipes that create the tables.</td></tr>
+    <tr><td><code>Middleware/</code></td><td>Global error handler: turns exceptions into tidy JSON errors.</td></tr>
+    <tr><td><code>Mappings/</code></td><td>AutoMapper rules (identity, course, chat).</td></tr>
+    <tr><td><code>Program.cs</code></td><td>The start-up file: wires everything together and starts the web server.</td></tr>
+  </table>
+
+  <details>
+    <summary>Example: trace <code>GET /api/chat/history/1</code> through the Chat service</summary>
+    <ol>
+      <li><code>Program.cs</code> → Serilog request logging, then <code>ExceptionMiddleware</code> wraps everything in a safety net.</li>
+      <li><code>ChatController.GetHistory(1)</code> receives the call.</li>
+      <li>It asks <code>ChatService.GetHistoryAsync(1)</code>.</li>
+      <li>That asks <code>ChatRepository.GetChatHistoryAsync(1)</code>, which runs an EF Core query for messages of the last 15 days.</li>
+      <li>AutoMapper converts <code>Message</code> rows into <code>MessageResponse</code> objects, which return as JSON.</li>
+    </ol>
+  </details>
+</section>
+
+<!-- 10 -->
+<section id="db">
+  <h2><span class="num">10</span>Databases</h2>
+  <p class="lead">One PostgreSQL server (Neon), four databases – one per data-owning service.</p>
+  <table>
+    <tr><th>Database</th><th>Owner</th><th>Main tables</th></tr>
+    <tr><td><code>horizonDB</code></td><td>Identity</td><td><code>AspNetUsers</code>, <code>AspNetRoles</code>, <code>AspNetUserRoles</code>… (ASP.NET Identity standard tables)</td></tr>
+    <tr><td><code>horizonCourseDB</code></td><td>Course</td><td><code>Courses</code>, <code>CourseVideos</code>, <code>Comments</code>, <code>Enrollments</code></td></tr>
+    <tr><td><code>horizonStudentDB</code></td><td>Student</td><td><code>StudentProfiles</code>, <code>Bookmarks</code>, <code>ProgressRecords</code>, <code>Enrollments</code></td></tr>
+    <tr><td><code>horizonChatDB</code></td><td>Chat</td><td><code>Users</code>, <code>ChatSessions</code>, <code>Messages</code></td></tr>
+  </table>
+  <ul>
+    <li>No service reads another service’s database. They only ask each other through APIs.</li>
+    <li><b>Tables are created automatically.</b> Each service runs <code>Database.Migrate()</code> when it starts, applying the <code>InitialCreate</code> migration from its <code>Migrations/</code> folder if the tables are missing. Identity also seeds the admin account at that moment.</li>
+    <li>The code uses <code>UseNpgsql(...)</code> (the PostgreSQL driver) in each <code>Program.cs</code>.</li>
+  </ul>
+  <div class="box warn"><b class="t">Course and Identity stop if the database is unreachable</b> (they cannot run without one). Student and Chat only log an error and keep running, so check their logs for “error occurred while migrating” if data is missing.</div>
+</section>
+
+<!-- 11 -->
+<section id="config">
+  <h2><span class="num">11</span>Where settings come from (connection strings!)</h2>
+  <p class="lead">Why <code>appsettings.json</code> shows a fake password but the app still reaches Neon.</p>
+
+  <p>When a .NET app starts, <code>WebApplication.CreateBuilder(args)</code> reads settings from several places, <b>later ones win</b>:</p>
+  <ol class="steps">
+    <li><code>appsettings.json</code> (in the repository): holds a harmless placeholder <code>Host=localhost;…;Password=CHANGE_ME</code>.</li>
+    <li><code>appsettings.Development.json</code> (if you create one).</li>
+    <li><b>User-secrets</b> (only when <code>ASPNETCORE_ENVIRONMENT=Development</code>): a private file on <i>your</i> computer at<br><code>%APPDATA%\Microsoft\UserSecrets\&lt;UserSecretsId&gt;\secrets.json</code>. The <code>UserSecretsId</code> is written in each service’s <code>.csproj</code>.</li>
+    <li><b>Environment variables</b> (e.g. <code>ConnectionStrings__DefaultConnection</code>). Handy for servers.</li>
+    <li>Command-line arguments.</li>
+  </ol>
+  <p>The code then asks for the setting by name:</p>
+<pre><code>// services/course-service/Program.cs
+builder.Services.AddDbContext&lt;ApplicationDbContext&gt;(options =&gt;
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));</code></pre>
+  <p>Whatever source “won” gives the value. On your PC it is the Neon string from user-secrets.</p>
+
+  <table>
+    <tr><th>Service</th><th>Setting name</th></tr>
+    <tr><td>Identity, Course, Student</td><td><code>ConnectionStrings:DefaultConnection</code></td></tr>
+    <tr><td>Chat</td><td><code>ConnectionStrings:WebApplication1Context</code></td></tr>
+  </table>
+
+  <h3>Set your secret</h3>
+<pre><code>cd services/course-service
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=ep-xxxx.neon.tech;Database=horizonCourseDB;Username=neondb_owner;Password=YOUR_PASSWORD;SSL Mode=Require;Timeout=30"
+dotnet user-secrets list</code></pre>
+  <div class="box tip"><b class="t">Why not commit the password?</b> Anything pushed to GitHub is public. User-secrets keeps the real password on your computer only. On a new PC you set the secrets again (4 commands).</div>
+
+  <h3>Other settings worth knowing</h3>
+  <table>
+    <tr><th>Setting</th><th>Where</th><th>Meaning</th></tr>
+    <tr><td><code>Jwt:Key / Issuer / Audience</code></td><td>gateway, identity, course, student, teacher</td><td>Must be identical everywhere so every service accepts tokens signed by Identity.</td></tr>
+    <tr><td><code>ServiceAuth:Key</code></td><td>identity, student, course</td><td>The shared secret for service-to-service calls. Must match.</td></tr>
+    <tr><td><code>Admin:Email / Password</code></td><td>identity</td><td>The admin account created on first start.</td></tr>
+    <tr><td><code>ServiceUrls:*</code>, <code>StudentApi:BaseUrl</code></td><td>student, teacher, identity</td><td>Addresses of the other services.</td></tr>
+    <tr><td><code>GatewayUrl</code></td><td>MVC</td><td>Where the website sends all API calls.</td></tr>
+    <tr><td><code>AutoMapper:LicenseKey</code></td><td>chat, course, identity</td><td>Optional free licence key; without it AutoMapper just logs a notice.</td></tr>
+  </table>
+</section>
+
+<!-- 12 -->
+<section id="web">
+  <h2><span class="num">12</span>The website (Horizon.MVC)</h2>
+  <p class="lead">Code: <code>Horizon.MVC/</code></p>
+  <p>It is an <b>ASP.NET Core MVC</b> app: the server builds the HTML page and sends it to the browser. “MVC” means <b>M</b>odel (data) · <b>V</b>iew (the <code>.cshtml</code> page) · <b>C</b>ontroller (decides which view to show).</p>
+
+  <div class="grid">
+    <div class="card"><h4>Controllers</h4>Auth (login, register, logout), Dashboard, Profile, Bookmarks, Courses, Discovery, Enrollment, Progress, Recommendation, Teacher, ChatMvc (<code>/chat</code>), Home, Admin area.</div>
+    <div class="card"><h4>Named HttpClients</h4><code>ApiService</code> → <code>/auth/</code><br><code>StudentAPI</code> → <code>/students/</code><br><code>LearningApi</code> → <code>/courses/</code><br><code>TeacherAPI</code> → <code>/teachers/</code><br><code>ChatApi</code> → <code>/chat/</code><br>All start with <code>GatewayUrl</code>.</div>
+    <div class="card"><h4>Handlers</h4><code>BearerTokenHandler</code> adds your JWT to every API call. <code>RetryHandler</code> retries failed calls.</div>
+    <div class="card"><h4>Redirects after login</h4>Student → <code>/Dashboard</code><br>Teacher → <code>/Teacher</code><br>Admin → <code>/Admin/Admin/Dashboard</code></div>
+  </div>
+  <p>Styling comes from Tailwind CSS, Bootstrap and jQuery loaded from CDNs (so the website needs internet access), with the “Academic Premium” theme and a light/dark toggle (<code>wwwroot/js/site.js</code>). There is also a standalone Razor Page, <code>/Scholarship</code>.</p>
+</section>
+
+<!-- 13 -->
+<section id="logs">
+  <h2><span class="num">13</span>Logging with Serilog</h2>
+  <p>The gateway and all five services write logs to the console <b>and</b> to a new file every day inside their own <code>logs/</code> folder (created at run time, ignored by Git).</p>
+  <table>
+    <tr><th>Program</th><th>Log file</th></tr>
+    <tr><td>Gateway</td><td><code>gateway/GatewayAPI/logs/gateway-logYYYYMMDD.txt</code></td></tr>
+    <tr><td>Identity</td><td><code>services/identity-service/logs/authentication-YYYYMMDD.txt</code></td></tr>
+    <tr><td>Teacher</td><td><code>services/teacher-service/logs/teacher-service-YYYYMMDD.txt</code></td></tr>
+    <tr><td>Course</td><td><code>services/course-service/logs/log-YYYYMMDD.txt</code></td></tr>
+    <tr><td>Student</td><td><code>services/student-service/logs/log-YYYYMMDD.txt</code></td></tr>
+    <tr><td>Chat</td><td><code>services/chat-service/logs/API_Log-YYYYMMDD.txt</code></td></tr>
+  </table>
+  <p>Every request gets a line like <code>HTTP GET /api/CoursesApi responded 200 in 35 ms</code>, so you can follow a request across services by looking at their logs at the same time. The MVC website uses .NET’s default console logging.</p>
+</section>
+
+<!-- 14 -->
+<section id="run">
+  <h2><span class="num">14</span>Run it yourself</h2>
+  <ol class="steps">
+    <li><b>Install</b> the <a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a>.</li>
+    <li><b>Get a database.</b> Create a free Neon project with four databases named <code>horizonDB</code>, <code>horizonCourseDB</code>, <code>horizonStudentDB</code>, <code>horizonChatDB</code> (or run a local PostgreSQL). See <code>database_setup_neon.md</code>.</li>
+    <li><b>Set the four connection-string secrets</b> (section 11).</li>
+    <li><b>Trust the dev certificate</b> once: <code>dotnet dev-certs https --trust</code></li>
+    <li><b>Start everything</b> from the repository root: <code>./run-all.ps1</code> (opens 7 windows).<br>Or in Visual Studio use <code>integration.slnLaunch</code>.</li>
+    <li>Open <b>https://localhost:7006</b>, register, and explore.</li>
+    <li>Log in as admin to approve teachers: the default admin is <code>krish@learningplatform.com</code> / <code>Krish@123</code> (change it with <code>Admin:Email</code> and <code>Admin:Password</code>).</li>
+  </ol>
+  <div class="box">Each service also has an interactive API page at <code>https://localhost:&lt;port&gt;/swagger</code> (Development mode). The Chat service shows it on its root page.</div>
+</section>
+
+<!-- 15 -->
+<section id="try">
+  <h2><span class="num">15</span>Try the API like a developer</h2>
+  <p>These work in a terminal (use <code>-k</code> so curl accepts the local certificate).</p>
+<pre><code># 1) Log in as admin through the gateway and keep the token
+curl -k -X POST https://localhost:7000/auth/api/Auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"krish@learningplatform.com","password":"Krish@123"}'
+
+# 2) Public data: no token needed
+curl -k https://localhost:7000/courses/api/CoursesApi
+
+# 3) Protected route without a token -> 401 from the gateway itself
+curl -k -i https://localhost:7000/teachers/api/teacher/courses
+
+# 4) Same route with a teacher token -> 200
+curl -k https://localhost:7000/teachers/api/teacher/courses -H "Authorization: Bearer YOUR_TOKEN"
+
+# 5) Watch the rate limiter: after 100 quick calls you start getting 429
+for i in $(seq 1 140); do curl -sk -o /dev/null -w "%{http_code}\n" https://localhost:7000/students/swagger/index.html; done | sort | uniq -c</code></pre>
+  <p>Good learning exercise: stop one service (say Course) and call its route through the gateway: you will see <b>502</b> from the gateway while the other routes keep working. That is the point of microservices.</p>
+</section>
+
+<!-- 16 -->
+<section id="limits">
+  <h2><span class="num">16</span>Known limits (good next steps)</h2>
+  <ul>
+    <li><b>Chat has no login check of its own.</b> Only the gateway protects it, so call it through the gateway.</li>
+    <li><b>Most student endpoints are open</b> (only <code>/api/profile</code> checks a token) and the student, course and auth routes have no gateway policy.</li>
+    <li><b>Course “progress” notification</b> (<code>api/coursesapi/progress</code>) only logs the message; it does not store progress.</li>
+    <li><b>Teacher chat</b> is a placeholder: the Teacher service returns an empty conversation list.</li>
+    <li><b>Secrets in <code>appsettings.json</code></b>: the JWT key, <code>ServiceAuth:Key</code> and admin password are plain values meant for local use. Move them to user-secrets or environment variables before deploying anywhere public.</li>
+    <li><b>No automated tests</b> yet.</li>
+  </ul>
+</section>
+
+<!-- 17 -->
+<section id="folders">
+  <h2><span class="num">17</span>Folder map</h2>
+<pre><code>Horizon/
+├── README.md                    project overview
+├── database_setup_neon.md       how to set up PostgreSQL / Neon
+├── docs/horizon-guide.html      this guide
+├── run-all.ps1                  starts all 7 programs
+├── integration.slnx             the solution (all projects)
+├── integration.slnLaunch        Visual Studio multi-start profile
+├── Horizon.MVC/                 the website  (port 7006)
+│   ├── Controllers/  Services/  Handlers/  Views/  Areas/Admin/  Pages/  wwwroot/
+├── gateway/GatewayAPI/          YARP gateway (port 7000): Program.cs + appsettings.json routes
+└── services/
+    ├── identity-service/        login, users, JWT      (7005, horizonDB)
+    ├── teacher-service/         teacher workflow       (7001, no database)
+    ├── course-service/          courses, enrolments    (7003, horizonCourseDB)
+    ├── student-service/         student features        (7002, horizonStudentDB)
+    └── chat-service/            chat                    (7004, horizonChatDB)</code></pre>
+</section>
+
+</main>
+</div>
+<footer>Horizon · .NET 10 · YARP · PostgreSQL · Serilog — a hands-on project for learning how API gateways and microservices work together.</footer>
+</body>
+</html>
