@@ -4,11 +4,13 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using Courses.Api.Middlewares;
 using Serilog;
-using AutoMapper;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
+// Keep SQL Server-style DateTime semantics (timestamp without time zone) on PostgreSQL
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddAutoMapper(cfg =>
 {
+    cfg.LicenseKey = builder.Configuration["AutoMapper:LicenseKey"];
     cfg.AddProfile<Courses.Api.Mappings.MappingProfile>();
 });
 
@@ -56,7 +59,7 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Repositories
 builder.Services.AddScoped<Courses.Api.Repositories.ICourseRepository, Courses.Api.Repositories.CourseRepository>();
@@ -97,6 +100,11 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+}
 
 app.UseMiddleware<ExceptionMiddleware>();
 

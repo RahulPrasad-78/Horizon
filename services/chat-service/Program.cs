@@ -1,12 +1,9 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System;
 using WebApplication1.Data;
 using WebApplication1.Mappings;
 using WebApplication1.Middleware;
@@ -19,12 +16,15 @@ namespace WebApplication1
     {
         public static void Main(string[] args)
         {
+            // Keep SQL Server-style DateTime semantics (timestamp without time zone) on PostgreSQL
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             var builder = WebApplication.CreateBuilder(args);
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
-                .WriteTo.File("Logs/API_Log-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/API_Log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             builder.Host.UseSerilog();
@@ -34,10 +34,10 @@ namespace WebApplication1
             builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-            builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddAutoMapper(cfg => cfg.LicenseKey = builder.Configuration["AutoMapper:LicenseKey"], typeof(MappingProfile));
 
             builder.Services.AddDbContext<WebApplication1Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("WebApplication1Context")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("WebApplication1Context")));
 
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
@@ -53,7 +53,6 @@ namespace WebApplication1
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");

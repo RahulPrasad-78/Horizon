@@ -20,9 +20,12 @@ namespace LearningPlatform.StudentService
     {
         public static async Task Main(string[] args)
         {
+            // Keep SQL Server-style DateTime semantics (timestamp without time zone) on PostgreSQL
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             var builder = WebApplication.CreateBuilder(args);
@@ -75,6 +78,7 @@ namespace LearningPlatform.StudentService
                 client.BaseAddress = new Uri(
                     builder.Configuration["ServiceUrls:CourseService"] ?? "https://localhost:7003/");
                 client.Timeout = TimeSpan.FromSeconds(3);
+                client.DefaultRequestHeaders.Add("X-Service-Key", builder.Configuration["ServiceAuth:Key"] ?? string.Empty);
             }).AddPolicyHandler(retryPolicy);
 
             builder.Services.AddHttpClient("ChatService", client =>
@@ -98,7 +102,7 @@ namespace LearningPlatform.StudentService
             builder.Services.AddScoped<IStudentExperienceService, StudentExperienceService>();
 
             builder.Services.AddDbContext<StudentDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddMemoryCache();
 
@@ -126,6 +130,7 @@ namespace LearningPlatform.StudentService
             });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddCors();
 
 
             var app = builder.Build();
@@ -147,7 +152,6 @@ namespace LearningPlatform.StudentService
 
             app.UseMiddleware<ErrorMiddleware>();
 
-            app.UseStaticFiles();
 
             app.UseAuthentication();
             app.UseAuthorization();
