@@ -1,5 +1,4 @@
 using Horizon.MVC.DTOs;
-using Horizon.MVC.ViewModels;
 using Horizon.MVC.Models;
 using Horizon.MVC.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +23,7 @@ namespace Horizon.MVC.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
-            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7081";
+            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7006";
             var courses = await _discoveryService.GetAllCoursesAsync(page, 9);
             return View(courses);
         }
@@ -34,7 +33,7 @@ namespace Horizon.MVC.Controllers
             if (string.IsNullOrWhiteSpace(query))
                 return RedirectToAction("Index");
 
-            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7081";
+            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7006";
             ViewBag.Query = query;
             var courses = await _discoveryService.SearchCoursesAsync(query, page, 9);
             return View("Index", courses);

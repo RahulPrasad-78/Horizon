@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Discover Courses";
     var query = ViewBag.Query as string ?? "";
-    var courseFrontend = ViewBag.CourseFrontendUrl as string ?? "https://localhost:7081";
+    var courseFrontend = ViewBag.CourseFrontendUrl as string ?? "https://localhost:7006";
     var totalPages = Model.TotalCount > 0 ? (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize) : 1;
     var currentPage = Model.Page;
 }

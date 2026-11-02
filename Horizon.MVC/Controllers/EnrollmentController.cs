@@ -1,6 +1,4 @@
-using Horizon.MVC.DTOs;
 using Horizon.MVC.ViewModels;
-using Horizon.MVC.Models;
 using Horizon.MVC.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,7 +53,7 @@ namespace Horizon.MVC.Controllers
                 });
             }
 
-            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7081";
+            ViewBag.CourseFrontendUrl = _config["ExternalUrls:CourseFrontend"] ?? "https://localhost:7006";
 
             return View(viewModels);
         }

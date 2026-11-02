@@ -2,7 +2,7 @@
 @model List<EnrolledCourseViewModel>
 @{
     ViewData["Title"] = "My Courses";
-    var courseFrontend = ViewBag.CourseFrontendUrl as string ?? "https://localhost:7081";
+    var courseFrontend = ViewBag.CourseFrontendUrl as string ?? "https://localhost:7006";
     var completed = Model?.Count(c => c.IsCompleted) ?? 0;
     var inProgress = Model?.Count(c => c.IsStarted && !c.IsCompleted) ?? 0;
     var notStarted = Model?.Count(c => !c.IsStarted) ?? 0;

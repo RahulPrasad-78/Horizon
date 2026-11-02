@@ -1,4 +1,3 @@
-using Horizon.MVC.DTOs;
 using Horizon.MVC.Models;
 using Horizon.MVC.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -66,10 +65,13 @@ namespace Horizon.MVC.Controllers
                     new AuthenticationProperties { IsPersistent = true });
 
                 if (roles.Contains("Admin"))
-                    return RedirectToAction("Dashboard", "Admin");
+                    return RedirectToAction("Dashboard", "Admin", new { area = "Admin" });
 
                 if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                     return Redirect(model.ReturnUrl);
+
+                if (roles.Contains("Teacher"))
+                    return RedirectToAction("Index", "Teacher");
 
                 return RedirectToAction("Index", "Dashboard");
             }

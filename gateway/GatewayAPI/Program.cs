@@ -41,6 +41,7 @@ namespace GatewayAPI
 
             builder.Services.AddRateLimiter(options =>
             {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
                 options.AddFixedWindowLimiter("fixed", opt =>
                 {
                     opt.PermitLimit = 100;
