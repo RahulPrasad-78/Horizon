@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 
 namespace Horizon.MVC.Models
 {
@@ -18,11 +17,6 @@ namespace Horizon.MVC.Models
         public string? Role { get; set; }
         public DateTime? CreatedAt { get; set; }
         public IList<string> Roles { get; set; } = new List<string>();
-    }
-
-    public class ApprovalRequestViewModel
-    {
-        public string? Notes { get; set; }
     }
 
     public class AdminDashboardViewModel

@@ -1,6 +1,5 @@
 ﻿using LearningPlatform.TeacherService.Common;
 using LearningPlatform.TeacherService.DTOs;
-using LearningPlatform.TeacherService.Exceptions;
 using LearningPlatform.TeacherService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

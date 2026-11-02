@@ -1,5 +1,4 @@
 ﻿using LearningPlatform.StudentService.Models;
-using LearningPlatform.StudentService.DTOs;
 
 namespace LearningPlatform.StudentService.Services
 {

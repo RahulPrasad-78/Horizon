@@ -1,4 +1,3 @@
-using Horizon.MVC.DTOs;
 using Horizon.MVC.ViewModels;
 using Horizon.MVC.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -13,17 +12,6 @@ namespace Horizon.MVC.Controllers
         public IActionResult Index()
         {
             ViewData["HideSidebar"] = true;
-            return View();
-        }
-
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
-
-        [AllowAnonymous]
-        public IActionResult Privacy()
-        {
             return View();
         }
 

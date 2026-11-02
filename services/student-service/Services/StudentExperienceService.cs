@@ -1,6 +1,5 @@
 using LearningPlatform.StudentService.Models;
 using LearningPlatform.StudentService.Repositories;
-using LearningPlatform.StudentService.DTOs;
 using Microsoft.Extensions.Logging;
 
 namespace LearningPlatform.StudentService.Services

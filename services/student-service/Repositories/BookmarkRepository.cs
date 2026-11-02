@@ -72,17 +72,6 @@ namespace LearningPlatform.StudentService.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Bookmark>> GetByCategoryAsync(string sid, string cat)
-        {
-            var normalized = cat.Trim().ToLower();
-
-            return await _context.Bookmarks
-                .AsNoTracking()
-                .Where(b => b.StudentId == sid && b.Category == normalized)
-                .OrderByDescending(b => b.Id)
-                .ToListAsync();
-        }
-
         public async Task<List<int>> GetAllBookmarkedCourseIdsAsync(string sid)
         {
             return await _context.Bookmarks

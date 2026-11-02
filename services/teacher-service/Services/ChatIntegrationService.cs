@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using LearningPlatform.TeacherService.DTOs;
 using LearningPlatform.TeacherService.Exceptions;
 
@@ -51,12 +50,7 @@ namespace LearningPlatform.TeacherService.Services
                 "[CHAT STUB] GetConversationsAsync called for teacher {TeacherId}. " +
                 "Chat API conversation list endpoint not yet available.", teacherId);
 
-            // TODO: replace with real call:
-            // var client = _factory.CreateClient(ClientName);
-            // var result = await client.GetFromJsonAsync<List<TeacherConversationDto>>(
-            //     $"api/chat/conversations?teacherId={teacherId}");
-            // return result ?? new();
-
+            // TODO: call the chat service once it exposes a teacher conversation list endpoint.
             return Task.FromResult(new List<TeacherConversationDto>());
         }
 

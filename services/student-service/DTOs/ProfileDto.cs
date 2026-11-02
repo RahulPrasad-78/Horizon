@@ -15,19 +15,4 @@ namespace LearningPlatform.StudentService.DTOs
         public string? Email { get; set; }
         public DateTime JoinedDate { get; set; } = DateTime.UtcNow;
     }
-    
-    //public class ProfileService
-    //{
-    //    public async Task SaveAsync(string studentId, ProfileDto dto)
-    //    {
-    //        var profile = new StudentProfile
-    //        {
-    //            StudentId = studentId,
-    //            FullName = dto.FullName.Trim(),
-    //            // Remove: Role = dto.Role?.Trim() ?? "Student",
-    //            Bio = dto.Bio?.Trim(),
-    //            // ... rest
-    //        };
-    //    }
-    //}
 }

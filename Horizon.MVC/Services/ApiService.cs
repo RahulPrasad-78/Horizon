@@ -1,7 +1,5 @@
-using Horizon.MVC.DTOs;
 using Horizon.MVC.Models;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 
 namespace Horizon.MVC.Services
 {

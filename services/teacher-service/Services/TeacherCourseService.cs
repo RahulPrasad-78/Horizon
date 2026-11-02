@@ -1,5 +1,4 @@
 using LearningPlatform.TeacherService.DTOs;
-using LearningPlatform.TeacherService.Exceptions;
 
 namespace LearningPlatform.TeacherService.Services
 {

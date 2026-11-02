@@ -1,6 +1,5 @@
 using LearningPlatform.StudentService.DTOs;
 using Microsoft.Extensions.Caching.Memory;
-using System.Net.Http.Json;
 namespace LearningPlatform.StudentService.Services
 {
     public class BookDiscoveryService : IBookDiscoveryService

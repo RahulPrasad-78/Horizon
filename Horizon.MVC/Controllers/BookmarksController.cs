@@ -1,5 +1,4 @@
 using Horizon.MVC.DTOs;
-using Horizon.MVC.ViewModels;
 using Horizon.MVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Horizon.MVC.Services;

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Courses.Models;
 using Courses.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;

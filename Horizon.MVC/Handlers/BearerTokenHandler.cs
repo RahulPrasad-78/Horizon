@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Security.Claims;
 
 namespace Horizon.MVC.Handlers
 {

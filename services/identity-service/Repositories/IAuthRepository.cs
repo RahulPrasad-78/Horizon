@@ -12,7 +12,6 @@ namespace LearningPlatformAuth.Repositories
         Task<object> UpdateTeacherStatus(string userId, bool isApproved, string? notes);
         Task<ApplicationUser?> GetUserByIdAsync(string userId);
         Task<ApplicationUser?> GetUserByEmailAsync(string email);
-        Task<List<ApplicationUser>> GetAllUsersAsync();
         Task<List<ApplicationUser>> GetUsersByRoleAsync(string role);
         Task<List<ApplicationUser>> GetApprovedUsersAsync();
     }

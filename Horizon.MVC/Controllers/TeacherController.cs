@@ -22,13 +22,6 @@ namespace Horizon.MVC.Controllers
             return View(dashboard);
         }
 
-        // GET /Teacher/Courses  →  Full course list
-        public async Task<IActionResult> Courses()
-        {
-            var courses = await _teacherService.GetMyCoursesAsync();
-            return View(courses);
-        }
-
         // GET /Teacher/Create
         public IActionResult Create() => View(new TeacherCourseWriteDto { StartDate = DateTime.Today });
 

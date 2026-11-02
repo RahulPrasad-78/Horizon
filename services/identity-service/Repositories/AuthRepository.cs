@@ -98,11 +98,6 @@ namespace LearningPlatformAuth.Repositories
             return await _userManager.FindByEmailAsync(email);
         }
 
-        public async Task<List<ApplicationUser>> GetAllUsersAsync()
-        {
-            return _userManager.Users.ToList();
-        }
-
         public async Task<List<ApplicationUser>> GetUsersByRoleAsync(string role)
         {
             var users = await _userManager.GetUsersInRoleAsync(role);

@@ -1,4 +1,3 @@
-using LearningPlatform.StudentService.DTOs;
 using LearningPlatform.StudentService.Exceptions;
 using LearningPlatform.StudentService.Common;
 namespace LearningPlatform.StudentService.Middleware

@@ -26,13 +26,5 @@ namespace Horizon.MVC.Services
                 _client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
         }
-
-        protected bool IsTokenPresent()
-        {
-            var ctx = _httpContextAccessor.HttpContext;
-            if (ctx == null) return false;
-            return !string.IsNullOrEmpty(ctx.Session.GetString("jwt"))
-                || !string.IsNullOrEmpty(ctx.Request.Cookies["JwtToken"]);
-        }
     }
 }

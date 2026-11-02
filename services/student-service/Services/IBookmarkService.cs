@@ -1,6 +1,5 @@
 ﻿using LearningPlatform.StudentService.DTOs;
 using LearningPlatform.StudentService.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LearningPlatform.StudentService.Services
 {

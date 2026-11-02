@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
-using LearningPlatform.TeacherService.Common;
 using LearningPlatform.TeacherService.DTOs;
 using LearningPlatform.TeacherService.Exceptions;
 
@@ -53,7 +51,7 @@ namespace LearningPlatform.TeacherService.Services
             var client = _factory.CreateClient("CourseApi");
 
             // Forward the bearer token from the incoming request so the Course API
-            // can verify the teacher's role via its MockAuthMiddleware / real JWT.
+            // can verify the teacher's role via the forwarded JWT.
             var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
                             .FirstOrDefault()?.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
 

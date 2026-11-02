@@ -3,7 +3,6 @@ using Horizon.MVC.Models;
 using Horizon.MVC.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
 
 namespace Horizon.MVC.Controllers
 {
@@ -42,7 +41,7 @@ namespace Horizon.MVC.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            CourseReadDTO? course = null;
+            CourseReadDTO? course;
             try
             {
                 var wrapped = await _httpClient.GetFromJsonAsync<ApiResponse<CourseReadDTO>>($"api/CoursesApi/{id}");

@@ -1,4 +1,3 @@
-using Horizon.MVC.DTOs;
 using Horizon.MVC.ViewModels;
 using Horizon.MVC.Models;
 using Horizon.MVC.Services;

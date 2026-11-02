@@ -1,7 +1,6 @@
 using Horizon.MVC.DTOs;
 using Horizon.MVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
 
 namespace Horizon.MVC.Controllers
 {

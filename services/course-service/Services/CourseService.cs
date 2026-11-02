@@ -1,6 +1,5 @@
 using Courses.Api.Repositories;
 using Courses.Models;
-using Courses.Api.Exceptions;
 
 namespace Courses.Api.Services
 {

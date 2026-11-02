@@ -1,5 +1,4 @@
-﻿using LearningPlatform.StudentService.Models;
-
+﻿
 namespace LearningPlatform.StudentService.DTOs
 {
     public class DashboardDto

@@ -1,4 +1,3 @@
-using Horizon.MVC.DTOs;
 
 namespace Horizon.MVC.Models
 {

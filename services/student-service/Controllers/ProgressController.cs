@@ -1,12 +1,10 @@
 ﻿using LearningPlatform.StudentService.Common;
 using LearningPlatform.StudentService.DTOs;
 using LearningPlatform.StudentService.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LearningPlatform.StudentService.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ProgressController : BaseController

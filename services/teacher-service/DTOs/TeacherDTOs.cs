@@ -125,12 +125,6 @@ namespace LearningPlatform.TeacherService.DTOs
         public DateTime SentAt         { get; set; }
     }
 
-    /// <summary>Payload to send a message in an existing chat session.</summary>
-    public class SendChatMessageDto
-    {
-        public string Content { get; set; } = string.Empty;
-    }
-
     // ──────────────────────────────────────────────────────────────
     //  Paged response – matches StudentService shape so MVC layer
     //  can use the same deserialization helper for both.

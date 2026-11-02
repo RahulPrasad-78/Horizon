@@ -2,7 +2,6 @@ using LearningPlatformAuth.Models;
 using LearningPlatformAuth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace LearningPlatformAuth.Controllers
 {
