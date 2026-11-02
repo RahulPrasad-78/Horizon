@@ -2,7 +2,7 @@
 
 Horizon is an e-learning platform built to practise **how requests travel through an API gateway** to a set of independent microservices. One MVC website talks to a **YARP gateway**, and the gateway routes each request to one of five backend services. Every data-owning service has its own **PostgreSQL** database (hosted on [Neon](https://neon.tech) or run locally) and logs with **Serilog**.
 
-> 📖 **New to the project?** Open [`docs/horizon-guide.html`](docs/horizon-guide.html) in a browser. It is a beginner-friendly, illustrated walkthrough of how everything works.
+> 📖 **New to the project?** Open [`horizon-guide.html`](horizon-guide.html) in a browser. It is a beginner-friendly, illustrated walkthrough of how everything works.
 
 ---
 
@@ -179,7 +179,7 @@ Horizon/
 │   ├── course-service/       courses, enrolments          (horizonCourseDB)
 │   ├── student-service/      student features             (horizonStudentDB)
 │   └── chat-service/         chat                         (horizonChatDB)
-├── docs/horizon-guide.html   illustrated beginner guide
+├── horizon-guide.html        illustrated beginner guide
 ├── database_setup_neon.md    PostgreSQL / Neon setup
 ├── run-all.ps1               start everything
 ├── integration.slnx          solution
