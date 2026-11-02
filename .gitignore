@@ -33,6 +33,7 @@ build/
 # LOGS
 ############################################
 logs/
+Logs/
 *.log
 
 ############################################
@@ -40,6 +41,7 @@ logs/
 ############################################
 .env
 .env.*
+!.env.example
 appsettings.Development.json
 appsettings.Local.json
 
@@ -85,9 +87,3 @@ docker-compose.override.yml
 # KEEP EMPTY FOLDERS (ALLOW .gitkeep)
 ############################################
 !*/.gitkeep
-
-############################################
-# BUG FIX / ANALYSIS REPORT
-############################################
-bug_fix
-database_setup_neon.md
